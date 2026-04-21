@@ -1,0 +1,14 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "57FB4bJF8Fuh1Gal2crGW"
+uri = "file://artifacts/dorm-dollar/assets/images/icon.png"
+type = "image"
+title = "DormDollar app icon"
+
+[[generated]]
+id = "qv4hbY280_SJE2E8cl1YN"
+uri = "file://artifacts/dorm-dollar/assets/images/splash.png"
+type = "image"
+title = "DormDollar splash screen"
