@@ -490,6 +490,19 @@ export default function BudgetScreen() {
             <Text style={styles.sectionTitle}>every transaction</Text>
             <Text style={styles.sectionSub}>{Object.values(txList).flat().length} entries</Text>
           </View>
+          {Object.keys(txList).length === 0 && (
+            <View style={styles.emptyState}>
+              <Text style={styles.emptyEmoji}>📭</Text>
+              <Text style={styles.emptyTitle}>no transactions yet</Text>
+              <Text style={styles.emptySub}>scan your first receipt to start tracking your spending</Text>
+              <TouchableOpacity style={styles.emptyBtn} onPress={handleScanReceipt} activeOpacity={0.85}>
+                <LinearGradient colors={["#6355E8", "#8B5CF6"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.emptyBtnGrad}>
+                  <Feather name="camera" size={15} color="#fff" />
+                  <Text style={styles.emptyBtnText}>Scan a Receipt</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          )}
           {Object.entries(txList).map(([group, txs]) => (
             <View key={group}>
               <Text style={styles.dateGroup}>{group}</Text>
@@ -808,4 +821,15 @@ const styles = StyleSheet.create({
   createCatBtn: { borderRadius: 16, overflow: "hidden", marginTop: 20, marginBottom: 8 },
   createCatGrad: { height: 52, flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 8 },
   createCatText: { color: "#fff", fontSize: 16, fontWeight: "700", fontFamily: "Inter_700Bold" },
+  emptyState: {
+    alignItems: "center", gap: 8, padding: 28,
+    backgroundColor: colors.light.card, borderRadius: 18,
+    borderWidth: 1.5, borderColor: colors.light.border, borderStyle: "dashed",
+  },
+  emptyEmoji: { fontSize: 36 },
+  emptyTitle: { fontSize: 16, fontWeight: "700", color: colors.light.foreground, fontFamily: "Inter_700Bold" },
+  emptySub: { fontSize: 13, color: colors.light.mutedForeground, fontFamily: "Inter_400Regular", textAlign: "center", lineHeight: 18 },
+  emptyBtn: { borderRadius: 14, overflow: "hidden", marginTop: 6, width: "100%" },
+  emptyBtnGrad: { height: 46, flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 8 },
+  emptyBtnText: { color: "#fff", fontSize: 14, fontWeight: "700", fontFamily: "Inter_700Bold" },
 });

@@ -272,25 +272,33 @@ export default function DiscountsScreen() {
   const [claimed, setClaimed] = useState<Record<string, boolean>>({});
   const [forYouDeals, setForYouDeals] = useState<Deal[]>([]);
   const [userInterests, setUserInterests] = useState<string[]>([]);
+  const [showBanner, setShowBanner] = useState(false);
   const topPad = Platform.OS === "web" ? insets.top + 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? insets.bottom + 34 : insets.bottom;
 
   useEffect(() => {
     const loadPersonalization = async () => {
       try {
-        const [answersRaw, interestsRaw] = await Promise.all([
+        const [answersRaw, interestsRaw, bannerDismissed] = await Promise.all([
           AsyncStorage.getItem("dobbi_onboarding_answers"),
           AsyncStorage.getItem("dobbi_user_interests"),
+          AsyncStorage.getItem("dobbi_quickstart_dismissed"),
         ]);
         const answers = answersRaw ? JSON.parse(answersRaw) : {};
         const interests: string[] = interestsRaw ? JSON.parse(interestsRaw) : [];
         setUserInterests(interests);
         const personalized = getPersonalizedDeals(DEALS, answers.top_spend ?? "", interests);
         setForYouDeals(personalized.slice(0, 4));
+        if (!bannerDismissed) setShowBanner(true);
       } catch { /* ignore */ }
     };
     loadPersonalization();
   }, []);
+
+  const dismissBanner = async () => {
+    await AsyncStorage.setItem("dobbi_quickstart_dismissed", "true");
+    setShowBanner(false);
+  };
 
   const totalSaved = Object.keys(claimed).length * 8.5;
   const quip = SAVING_QUIPS[Math.floor(totalSaved / 10) % SAVING_QUIPS.length];
@@ -370,6 +378,34 @@ export default function DiscountsScreen() {
         contentContainerStyle={[styles.list, { paddingBottom: bottomPad + 90 }]}
         showsVerticalScrollIndicator={false}
       >
+        {/* Quick start banner */}
+        {showBanner && (
+          <View style={styles.quickStartCard}>
+            <TouchableOpacity style={styles.quickStartDismiss} onPress={dismissBanner} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+              <Feather name="x" size={15} color={colors.light.mutedForeground} />
+            </TouchableOpacity>
+            <Text style={styles.quickStartTitle}>👋 here's how dobbi works</Text>
+            <View style={styles.quickStartSteps}>
+              {[
+                { num: "1", icon: "camera",       text: "Scan a receipt to log spending" },
+                { num: "2", icon: "bar-chart-2",  text: "See exactly where your money goes" },
+                { num: "3", icon: "tag",           text: "Claim student deals and save" },
+              ].map((s) => (
+                <View key={s.num} style={styles.quickStartStep}>
+                  <View style={styles.quickStartNum}>
+                    <Text style={styles.quickStartNumText}>{s.num}</Text>
+                  </View>
+                  <Feather name={s.icon as any} size={15} color={colors.light.primary} />
+                  <Text style={styles.quickStartStepText}>{s.text}</Text>
+                </View>
+              ))}
+            </View>
+            <TouchableOpacity style={styles.quickStartBtn} onPress={dismissBanner} activeOpacity={0.8}>
+              <Text style={styles.quickStartBtnText}>got it, let's go →</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
         {/* For You section */}
         {forYouDeals.length > 0 && category === "All" && !search && (
           <>
@@ -502,6 +538,20 @@ function DealCard({
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
+  quickStartCard: {
+    backgroundColor: colors.light.card, borderRadius: 18, padding: 18,
+    borderWidth: 1.5, borderColor: "#D8D3FA", marginBottom: 16,
+    shadowColor: "#6355E8", shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 2,
+  },
+  quickStartDismiss: { position: "absolute", top: 14, right: 14, zIndex: 1 },
+  quickStartTitle: { fontSize: 15, fontWeight: "800", color: colors.light.foreground, fontFamily: "Inter_700Bold", marginBottom: 14 },
+  quickStartSteps: { gap: 12, marginBottom: 16 },
+  quickStartStep: { flexDirection: "row", alignItems: "center", gap: 10 },
+  quickStartNum: { width: 22, height: 22, borderRadius: 11, backgroundColor: colors.light.secondary, justifyContent: "center", alignItems: "center" },
+  quickStartNumText: { fontSize: 11, fontWeight: "800", color: colors.light.primary, fontFamily: "Inter_700Bold" },
+  quickStartStepText: { fontSize: 14, color: colors.light.foreground, fontFamily: "Inter_500Medium", flex: 1 },
+  quickStartBtn: { backgroundColor: colors.light.secondary, borderRadius: 12, paddingVertical: 10, alignItems: "center", borderWidth: 1.5, borderColor: "#D8D3FA" },
+  quickStartBtnText: { fontSize: 13, fontWeight: "700", color: colors.light.primary, fontFamily: "Inter_700Bold" },
   header: { paddingHorizontal: 20, paddingBottom: 16, gap: 6 },
   headerTitle: { fontSize: 26, fontWeight: "800", color: "#fff", fontFamily: "Inter_700Bold" },
   headerSub: { fontSize: 13, color: "rgba(255,255,255,0.6)", fontFamily: "Inter_400Regular" },

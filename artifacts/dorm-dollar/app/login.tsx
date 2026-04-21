@@ -109,7 +109,7 @@ export default function LoginScreen() {
             <DobbiCharacter size="lg" mood="excited" />
             <Text style={styles.brandName}>dobbi</Text>
             <Text style={styles.brandTagline}>
-              your money's best friend 💸
+              stop overspending. built for students.
             </Text>
           </View>
 
