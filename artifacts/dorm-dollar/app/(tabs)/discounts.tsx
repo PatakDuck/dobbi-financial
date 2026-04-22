@@ -493,7 +493,7 @@ function DealCard({
     <View style={[
       styles.card,
       { backgroundColor: tc.card, borderColor: tc.border },
-      isClaimed && styles.cardClaimed,
+      isClaimed && { borderColor: "#A7F3D0", backgroundColor: tc.isDark ? "rgba(5,150,105,0.12)" : "#F9FFFD" },
       highlighted && styles.cardHighlighted,
     ]}>
       <View style={[styles.cardAccent, { backgroundColor: deal.accentColor }]} />

@@ -172,7 +172,7 @@ function GoalCard({ goal, onComplete }: { goal: Goal; onComplete: (id: string, x
       styles.card,
       { backgroundColor: tc.card, borderColor: tc.border },
       isLocked && styles.cardLocked,
-      isCompleted && styles.cardDone,
+      isCompleted && { borderColor: "#A7F3D0", backgroundColor: tc.isDark ? "rgba(5,150,105,0.1)" : "#F9FFFD" },
     ]}>
       {isLocked && (
         <View style={[styles.lockBanner, { backgroundColor: tc.muted }]}>

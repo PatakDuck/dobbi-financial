@@ -222,6 +222,7 @@ export default function BudgetScreen() {
   const [newCatBudget, setNewCatBudget] = useState("");
 
   const totalSpent = CATEGORIES_DISPLAY.reduce((s, c) => s + c.amount, 0);
+  const baseBudget = baseCategories.reduce((s, c) => s + c.budget, 0);
   const totalBudget = CATEGORIES_DISPLAY.reduce((s, c) => s + c.budget, 0);
   const weeklyTotal = WEEKLY_SPEND.reduce((s, d) => s + d.amount, 0);
 
@@ -334,7 +335,7 @@ export default function BudgetScreen() {
           </View>
           <View style={styles.totalDivider} />
           <View style={styles.totalItem}>
-            <Text style={[styles.totalAmt, { color: "#A7F3D0" }]}>${totalBudget - totalSpent}</Text>
+            <Text style={[styles.totalAmt, { color: "#A7F3D0" }]}>${baseBudget - totalSpent}</Text>
             <Text style={styles.totalLbl}>left</Text>
           </View>
           <View style={styles.totalDivider} />
