@@ -65,10 +65,9 @@ const INTEREST_OPTIONS = [
 ];
 
 const CONNECTED_APPS = [
-  { id: "strava",  name: "Strava",    icon: "activity",   color: "#FC4C02", connected: false, sub: "sync fitness challenges" },
-  { id: "spotify", name: "Spotify",   icon: "music",      color: "#1DB954", connected: true,  sub: "track subscription costs" },
-  { id: "venmo",   name: "Venmo",     icon: "send",       color: "#008CFF", connected: false, sub: "import split payments" },
-  { id: "apple",   name: "Apple Pay", icon: "smartphone", color: "#555555", connected: false, sub: "auto-import transactions" },
+  { id: "bank",  name: "Bank Account", icon: "credit-card", color: "#6355E8", connected: false, sub: "link your bank to auto-import transactions" },
+  { id: "apple", name: "Apple Pay",    icon: "smartphone",  color: "#555555", connected: false, sub: "sync Apple Pay purchases instantly" },
+  { id: "venmo", name: "Venmo",        icon: "send",        color: "#008CFF", connected: false, sub: "import split payments from friends" },
 ];
 
 export default function ProfileScreen() {
@@ -146,12 +145,11 @@ export default function ProfileScreen() {
   };
 
   const handleToggleApp = (id: string) => {
-    if (id !== "spotify") {
-      Alert.alert("Coming Soon", "This integration is almost ready! 🚀");
+    if (id === "bank") {
+      Alert.alert("Connect Bank Account", "We're building Plaid integration — securely link your bank to auto-import every transaction. Coming very soon 🔒");
       return;
     }
-    setConnectedApps((prev) => ({ ...prev, [id]: !prev[id] }));
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    Alert.alert("Coming Soon", "This integration is almost ready! 🚀");
   };
 
   return (
@@ -343,9 +341,9 @@ export default function ProfileScreen() {
             </View>
           </View>
 
-          {/* ── Connected apps ── */}
+          {/* ── Linked accounts ── */}
           <View style={styles.section}>
-            <Text style={[styles.sectionTitle, { color: tc.foreground }]}>connected apps</Text>
+            <Text style={[styles.sectionTitle, { color: tc.foreground }]}>linked accounts</Text>
             <View style={[styles.card, { backgroundColor: tc.card, borderColor: tc.border }]}>
               {CONNECTED_APPS.map((app, i) => (
                 <View key={app.id}>

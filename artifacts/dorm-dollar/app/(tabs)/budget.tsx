@@ -554,7 +554,7 @@ export default function BudgetScreen() {
       {/* ── Scan modal ── */}
       <Modal visible={scanModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalSheet, { backgroundColor: tc.card }]}>
+          <View style={[styles.modalSheet, { backgroundColor: tc.isDark ? "#1A1640" : "#fff" }]}>
             <View style={[styles.modalHandle, { backgroundColor: tc.border }]} />
             {scanning ? (
               <View style={styles.scanningState}>
@@ -610,7 +610,7 @@ export default function BudgetScreen() {
       {/* ── New category modal ── */}
       <Modal visible={catModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalSheet, { backgroundColor: tc.card, maxHeight: "85%" }]}>
+          <View style={[styles.modalSheet, { backgroundColor: tc.isDark ? "#1A1640" : "#fff", maxHeight: "85%" }]}>
             <View style={[styles.modalHandle, { backgroundColor: tc.border }]} />
             <View style={styles.modalHeader}>
               <Text style={[styles.modalTitle, { color: tc.foreground }]}>new category</Text>
