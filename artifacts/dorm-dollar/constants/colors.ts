@@ -1,123 +1,80 @@
-// Dobbi — Professional Fintech Color System
-// Direction: "Friendly Fintech" — clean authority with Gen Z warmth
-// Primary: Deep Indigo-Purple (trust + Gen Z)
-// Accent: Mint Green (money, wins, positive momentum)
-
 const colors = {
   light: {
     text: "#0D0F1A",
     tint: "#6355E8",
-
-    background: "#F5F6FA",
+    background: "#F5F4FF",
     foreground: "#0D0F1A",
-
     card: "#FFFFFF",
     cardForeground: "#0D0F1A",
-
-    // Primary brand — rich indigo-purple
     primary: "#6355E8",
     primaryForeground: "#FFFFFF",
-
-    // Secondary — soft lavender tint
     secondary: "#EEEAFD",
     secondaryForeground: "#3730A3",
-
-    // Accent — mint green (money wins)
     accent: "#00C896",
     accentForeground: "#FFFFFF",
-
-    // Subtle backgrounds
-    muted: "#F1F3F9",
+    muted: "#F1F0FA",
     mutedForeground: "#6B7280",
-
-    // Teal for info
     teal: "#06B6D4",
     tealForeground: "#FFFFFF",
-
-    // Purple lighter variant
     purple: "#8B78FF",
     purpleForeground: "#FFFFFF",
-
-    // Success/savings
     green: "#10B981",
     greenForeground: "#FFFFFF",
-
-    // Error/alert
     coral: "#EF4444",
     coralForeground: "#FFFFFF",
-
-    // XP / rewards
     gold: "#F59E0B",
     goldForeground: "#FFFFFF",
-
     destructive: "#EF4444",
     destructiveForeground: "#FFFFFF",
-
-    border: "#E4E7F0",
+    border: "rgba(99,85,232,0.1)",
     input: "#E4E7F0",
-
-    // Gradients
     gradientStart: "#6355E8",
     gradientEnd: "#8B5CF6",
-
-    // Budget category colors
+    backgroundGradient: ["#EDE9FF", "#F5F4FF", "#FAFAFE"] as string[],
     mandatory: "#EF4444",
     couldLess: "#F59E0B",
     saveHere: "#3B82F6",
     alreadySaving: "#10B981",
+    isDark: false,
   },
 
-  // Dark theme (ready for future)
   dark: {
-    text: "#F8F9FC",
-    tint: "#8B78FF",
-
-    background: "#0D0F1A",
-    foreground: "#F8F9FC",
-
-    card: "#151728",
-    cardForeground: "#F8F9FC",
-
-    primary: "#8B78FF",
+    text: "#F0F0FF",
+    tint: "#9D8FFF",
+    background: "#0A0B15",
+    foreground: "#F0F0FF",
+    card: "rgba(255,255,255,0.07)",
+    cardForeground: "#F0F0FF",
+    primary: "#9D8FFF",
     primaryForeground: "#FFFFFF",
-
-    secondary: "#1E1B40",
+    secondary: "rgba(255,255,255,0.1)",
     secondaryForeground: "#C4B5FD",
-
     accent: "#00D4A4",
     accentForeground: "#0D0F1A",
-
-    muted: "#1E2035",
-    mutedForeground: "#9CA3AF",
-
+    muted: "rgba(255,255,255,0.06)",
+    mutedForeground: "rgba(255,255,255,0.5)",
     teal: "#22D3EE",
     tealForeground: "#0D0F1A",
-
     purple: "#A78BFA",
     purpleForeground: "#FFFFFF",
-
     green: "#34D399",
     greenForeground: "#0D0F1A",
-
     coral: "#F87171",
     coralForeground: "#FFFFFF",
-
     gold: "#FCD34D",
     goldForeground: "#0D0F1A",
-
     destructive: "#F87171",
     destructiveForeground: "#FFFFFF",
-
-    border: "#2D3050",
-    input: "#2D3050",
-
+    border: "rgba(255,255,255,0.12)",
+    input: "rgba(255,255,255,0.12)",
     gradientStart: "#6355E8",
     gradientEnd: "#8B5CF6",
-
+    backgroundGradient: ["#0A0B15", "#12103A", "#1A1650"] as string[],
     mandatory: "#F87171",
     couldLess: "#FCD34D",
     saveHere: "#60A5FA",
     alreadySaving: "#34D399",
+    isDark: true,
   },
 
   radius: 16,

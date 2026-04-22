@@ -16,6 +16,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { ChatProvider } from "@/context/ChatContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 import {
   requestNotificationPermissions,
   scheduleDailyCheckIn,
@@ -98,6 +99,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <ErrorBoundary>
         <QueryClientProvider client={queryClient}>
+          <ThemeProvider>
           <AuthProvider>
             <ChatProvider>
               <GestureHandlerRootView>
@@ -109,6 +111,7 @@ export default function RootLayout() {
               </GestureHandlerRootView>
             </ChatProvider>
           </AuthProvider>
+          </ThemeProvider>
         </QueryClientProvider>
       </ErrorBoundary>
     </SafeAreaProvider>

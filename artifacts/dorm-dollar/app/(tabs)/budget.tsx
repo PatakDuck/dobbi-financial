@@ -12,7 +12,7 @@ import * as Haptics from "expo-haptics";
 import Svg, { Rect, Text as SvgText, G, Path, Circle } from "react-native-svg";
 import { useAuth } from "@/context/AuthContext";
 import { useTransactions } from "@/hooks/useTransactions";
-import colors from "@/constants/colors";
+import { useColors } from "@/hooks/useColors";
 
 const { width: SCREEN_W } = Dimensions.get("window");
 const CHART_W = SCREEN_W - 48;
@@ -197,6 +197,7 @@ interface CustomCategory {
 export default function BudgetScreen() {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
+  const tc = useColors();
   const topPad = Platform.OS === "web" ? insets.top + 67 : insets.top;
   const bottomPad = Platform.OS === "web" ? insets.bottom + 34 : insets.bottom;
 
@@ -315,7 +316,7 @@ export default function BudgetScreen() {
   const scannedTotal = scannedItems.filter((i) => i.selected).reduce((s, i) => s + i.amount, 0);
 
   return (
-    <View style={[styles.root, { backgroundColor: colors.light.background }]}>
+    <LinearGradient colors={tc.backgroundGradient as [string, string, ...string[]]} style={styles.root}>
       {/* ── Header ── */}
       <LinearGradient colors={["#2D1B69", "#3D2A8A"]} style={[styles.header, { paddingTop: topPad + 16 }]}>
         <View style={styles.headerRow}>
@@ -378,14 +379,14 @@ export default function BudgetScreen() {
         {/* ── Weekly chart ── */}
         <View style={styles.section}>
           <View style={styles.sectionRow}>
-            <Text style={styles.sectionTitle}>this week</Text>
-            <Text style={styles.sectionSub}>${weeklyTotal} total</Text>
+            <Text style={[styles.sectionTitle, { color: tc.foreground }]}>this week</Text>
+            <Text style={[styles.sectionSub, { color: tc.mutedForeground }]}>${weeklyTotal} total</Text>
           </View>
-          <View style={styles.card}>
+          <View style={[styles.card, { backgroundColor: tc.card, borderColor: tc.border }]}>
             <WeeklyBarChart data={WEEKLY_SPEND} />
             <View style={styles.chartLegend}>
               <View style={styles.legendDot} />
-              <Text style={styles.legendText}>today highlighted</Text>
+              <Text style={[styles.legendText, { color: tc.mutedForeground }]}>today highlighted</Text>
             </View>
           </View>
         </View>
@@ -393,12 +394,12 @@ export default function BudgetScreen() {
         {/* ── Monthly trend ── */}
         <View style={styles.section}>
           <View style={styles.sectionRow}>
-            <Text style={styles.sectionTitle}>6-month trend</Text>
-            <Text style={styles.sectionSub}>Nov → Apr</Text>
+            <Text style={[styles.sectionTitle, { color: tc.foreground }]}>6-month trend</Text>
+            <Text style={[styles.sectionSub, { color: tc.mutedForeground }]}>Nov → Apr</Text>
           </View>
-          <View style={styles.card}>
+          <View style={[styles.card, { backgroundColor: tc.card, borderColor: tc.border }]}>
             <MonthlyTrendChart data={MONTHLY_TREND} />
-            <Text style={styles.trendNote}>
+            <Text style={[styles.trendNote, { color: tc.mutedForeground }]}>
               Apr is your highest month — time to rein it in? 👀
             </Text>
           </View>
@@ -407,30 +408,30 @@ export default function BudgetScreen() {
         {/* ── Savings goals ── */}
         <View style={styles.section}>
           <View style={styles.sectionRow}>
-            <Text style={styles.sectionTitle}>saving for</Text>
-            <Text style={styles.sectionSub}>{SAVINGS_GOALS.length} goals</Text>
+            <Text style={[styles.sectionTitle, { color: tc.foreground }]}>saving for</Text>
+            <Text style={[styles.sectionSub, { color: tc.mutedForeground }]}>{SAVINGS_GOALS.length} goals</Text>
           </View>
           {SAVINGS_GOALS.map((g) => {
             const pct = Math.min(Math.round((g.saved / g.target) * 100), 100);
             const monthsLeft = Math.ceil((g.target - g.saved) / g.monthly);
             return (
-              <View key={g.id} style={styles.goalCard}>
+              <View key={g.id} style={[styles.goalCard, { backgroundColor: tc.card, borderColor: tc.border }]}>
                 <View style={styles.goalCardRow}>
                   <View style={[styles.goalIconCircle, { backgroundColor: g.color + "18" }]}>
                     <Text style={styles.goalIconText}>{g.emoji}</Text>
                   </View>
                   <View style={styles.goalCardInfo}>
-                    <Text style={styles.goalCardName}>{g.name}</Text>
-                    <Text style={styles.goalCardSub}>
+                    <Text style={[styles.goalCardName, { color: tc.foreground }]}>{g.name}</Text>
+                    <Text style={[styles.goalCardSub, { color: tc.mutedForeground }]}>
                       ${g.monthly}/mo · ~{monthsLeft} month{monthsLeft !== 1 ? "s" : ""} to go
                     </Text>
                   </View>
                   <View>
                     <Text style={[styles.goalCardPct, { color: g.color }]}>{pct}%</Text>
-                    <Text style={styles.goalCardAmt}>${g.saved}/${g.target}</Text>
+                    <Text style={[styles.goalCardAmt, { color: tc.mutedForeground }]}>${g.saved}/${g.target}</Text>
                   </View>
                 </View>
-                <View style={styles.goalBarTrack}>
+                <View style={[styles.goalBarTrack, { backgroundColor: tc.muted }]}>
                   <View style={[styles.goalBarFill, { width: `${pct}%` as any, backgroundColor: g.color }]} />
                 </View>
               </View>
@@ -441,41 +442,45 @@ export default function BudgetScreen() {
         {/* ── Category breakdown ── */}
         <View style={styles.section}>
           <View style={styles.sectionRow}>
-            <Text style={styles.sectionTitle}>by category</Text>
-            <TouchableOpacity style={styles.addCatBtn} onPress={() => setCatModal(true)} activeOpacity={0.7}>
-              <Feather name="plus" size={13} color={colors.light.primary} />
-              <Text style={styles.addCatText}>add category</Text>
+            <Text style={[styles.sectionTitle, { color: tc.foreground }]}>by category</Text>
+            <TouchableOpacity
+              style={[styles.addCatBtn, { backgroundColor: tc.secondary, borderColor: tc.border }]}
+              onPress={() => setCatModal(true)}
+              activeOpacity={0.7}
+            >
+              <Feather name="plus" size={13} color={tc.primary} />
+              <Text style={[styles.addCatText, { color: tc.primary }]}>add category</Text>
             </TouchableOpacity>
           </View>
           {CATEGORIES_DISPLAY.map((cat) => {
             const pct = Math.min((cat.amount / cat.budget) * 100, 100);
             const over = cat.amount > cat.budget;
             return (
-              <View key={cat.id} style={styles.catCard}>
+              <View key={cat.id} style={[styles.catCard, { backgroundColor: tc.card, borderColor: tc.border }]}>
                 <View style={styles.catRow}>
                   <View style={[styles.catIcon, { backgroundColor: cat.color + "18" }]}>
                     <Feather name={cat.icon as any} size={16} color={cat.color} />
                   </View>
                   <View style={styles.catInfo}>
                     <View style={styles.catLabelRow}>
-                      <Text style={styles.catLabel}>{cat.label}</Text>
+                      <Text style={[styles.catLabel, { color: tc.foreground }]}>{cat.label}</Text>
                       {over && (
                         <View style={styles.overBadge}>
                           <Text style={styles.overBadgeText}>over budget</Text>
                         </View>
                       )}
                     </View>
-                    <View style={styles.catBarTrack}>
+                    <View style={[styles.catBarTrack, { backgroundColor: tc.muted }]}>
                       <View style={[styles.catBarFill, { width: `${pct}%` as any, backgroundColor: over ? "#EF4444" : cat.color }]} />
                     </View>
                   </View>
                   <View style={styles.catAmounts}>
-                    <Text style={[styles.catSpent, over && { color: "#EF4444" }]}>${cat.amount}</Text>
-                    <Text style={styles.catBudget}>/${cat.budget}</Text>
+                    <Text style={[styles.catSpent, { color: tc.foreground }, over && { color: "#EF4444" }]}>${cat.amount}</Text>
+                    <Text style={[styles.catBudget, { color: tc.mutedForeground }]}>/${cat.budget}</Text>
                   </View>
                 </View>
                 {(over || pct > 70) && (
-                  <Text style={styles.catTip}>
+                  <Text style={[styles.catTip, { color: tc.mutedForeground }]}>
                     {over ? "💀 " : "👀 "}{CAT_TIPS[cat.id] ?? "worth keeping an eye on"}
                   </Text>
                 )}
@@ -487,14 +492,14 @@ export default function BudgetScreen() {
         {/* ── Transactions ── */}
         <View style={styles.section}>
           <View style={styles.sectionRow}>
-            <Text style={styles.sectionTitle}>every transaction</Text>
-            <Text style={styles.sectionSub}>{Object.values(txList).flat().length} entries</Text>
+            <Text style={[styles.sectionTitle, { color: tc.foreground }]}>every transaction</Text>
+            <Text style={[styles.sectionSub, { color: tc.mutedForeground }]}>{Object.values(txList).flat().length} entries</Text>
           </View>
           {Object.keys(txList).length === 0 && (
-            <View style={styles.emptyState}>
+            <View style={[styles.emptyState, { backgroundColor: tc.card, borderColor: tc.border }]}>
               <Text style={styles.emptyEmoji}>📭</Text>
-              <Text style={styles.emptyTitle}>no transactions yet</Text>
-              <Text style={styles.emptySub}>scan your first receipt to start tracking your spending</Text>
+              <Text style={[styles.emptyTitle, { color: tc.foreground }]}>no transactions yet</Text>
+              <Text style={[styles.emptySub, { color: tc.mutedForeground }]}>scan your first receipt to start tracking your spending</Text>
               <TouchableOpacity style={styles.emptyBtn} onPress={handleScanReceipt} activeOpacity={0.85}>
                 <LinearGradient colors={["#6355E8", "#8B5CF6"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.emptyBtnGrad}>
                   <Feather name="camera" size={15} color="#fff" />
@@ -505,8 +510,8 @@ export default function BudgetScreen() {
           )}
           {Object.entries(txList).map(([group, txs]) => (
             <View key={group}>
-              <Text style={styles.dateGroup}>{group}</Text>
-              <View style={styles.card}>
+              <Text style={[styles.dateGroup, { color: tc.mutedForeground }]}>{group}</Text>
+              <View style={[styles.card, { backgroundColor: tc.card, borderColor: tc.border }]}>
                 {(txs as Transaction[]).map((tx, idx) => (
                   <View key={tx.id}>
                     <View style={styles.txRow}>
@@ -515,21 +520,21 @@ export default function BudgetScreen() {
                       </View>
                       <View style={styles.txInfo}>
                         <View style={styles.txNameRow}>
-                          <Text style={styles.txName}>{tx.name}</Text>
+                          <Text style={[styles.txName, { color: tc.foreground }]}>{tx.name}</Text>
                           {tx.scanned && (
-                            <View style={styles.scannedBadge}>
-                              <Feather name="camera" size={9} color="#6355E8" />
-                              <Text style={styles.scannedText}>scanned</Text>
+                            <View style={[styles.scannedBadge, { backgroundColor: tc.secondary }]}>
+                              <Feather name="camera" size={9} color={tc.primary} />
+                              <Text style={[styles.scannedText, { color: tc.primary }]}>scanned</Text>
                             </View>
                           )}
                         </View>
-                        <Text style={styles.txTime}>{tx.time}</Text>
+                        <Text style={[styles.txTime, { color: tc.mutedForeground }]}>{tx.time}</Text>
                       </View>
                       <Text style={styles.txAmount}>
                         {tx.isExpense ? "-" : "+"}${tx.amount.toFixed(2)}
                       </Text>
                     </View>
-                    {idx < (txs as Transaction[]).length - 1 && <View style={styles.txDivider} />}
+                    {idx < (txs as Transaction[]).length - 1 && <View style={[styles.txDivider, { backgroundColor: tc.border }]} />}
                   </View>
                 ))}
               </View>
@@ -549,40 +554,45 @@ export default function BudgetScreen() {
       {/* ── Scan modal ── */}
       <Modal visible={scanModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
-          <View style={styles.modalSheet}>
-            <View style={styles.modalHandle} />
+          <View style={[styles.modalSheet, { backgroundColor: tc.card }]}>
+            <View style={[styles.modalHandle, { backgroundColor: tc.border }]} />
             {scanning ? (
               <View style={styles.scanningState}>
-                <ActivityIndicator size="large" color={colors.light.primary} />
-                <Text style={styles.scanningTitle}>analyzing receipt... 🔍</Text>
-                <Text style={styles.scanningSub}>dobbi's reading your bill ngl</Text>
+                <ActivityIndicator size="large" color={tc.primary} />
+                <Text style={[styles.scanningTitle, { color: tc.foreground }]}>analyzing receipt... 🔍</Text>
+                <Text style={[styles.scanningSub, { color: tc.mutedForeground }]}>dobbi's reading your bill ngl</Text>
               </View>
             ) : (
               <>
                 <View style={styles.modalHeader}>
                   <View>
-                    <Text style={styles.modalTitle}>{scannedMerchant}</Text>
-                    <Text style={styles.modalSub}>select what to add to your budget</Text>
+                    <Text style={[styles.modalTitle, { color: tc.foreground }]}>{scannedMerchant}</Text>
+                    <Text style={[styles.modalSub, { color: tc.mutedForeground }]}>select what to add to your budget</Text>
                   </View>
-                  <TouchableOpacity onPress={() => setScanModal(false)} style={styles.closeBtn}>
-                    <Feather name="x" size={20} color={colors.light.mutedForeground} />
+                  <TouchableOpacity onPress={() => setScanModal(false)} style={[styles.closeBtn, { backgroundColor: tc.muted }]}>
+                    <Feather name="x" size={20} color={tc.mutedForeground} />
                   </TouchableOpacity>
                 </View>
                 <ScrollView style={styles.itemList} showsVerticalScrollIndicator={false}>
                   {scannedItems.map((item) => (
-                    <TouchableOpacity key={item.id} style={styles.itemRow} onPress={() => handleToggleItem(item.id)} activeOpacity={0.75}>
-                      <View style={[styles.itemCheck, item.selected && styles.itemCheckOn]}>
+                    <TouchableOpacity
+                      key={item.id}
+                      style={[styles.itemRow, { borderBottomColor: tc.border }]}
+                      onPress={() => handleToggleItem(item.id)}
+                      activeOpacity={0.75}
+                    >
+                      <View style={[styles.itemCheck, { borderColor: tc.border }, item.selected && { backgroundColor: tc.primary, borderColor: tc.primary }]}>
                         {item.selected && <Feather name="check" size={12} color="#fff" />}
                       </View>
-                      <Text style={[styles.itemName, !item.selected && styles.itemDim]}>{item.name}</Text>
-                      <Text style={[styles.itemAmt, !item.selected && styles.itemDim]}>${item.amount.toFixed(2)}</Text>
+                      <Text style={[styles.itemName, { color: tc.foreground }, !item.selected && styles.itemDim]}>{item.name}</Text>
+                      <Text style={[styles.itemAmt, { color: tc.foreground }, !item.selected && styles.itemDim]}>${item.amount.toFixed(2)}</Text>
                     </TouchableOpacity>
                   ))}
                 </ScrollView>
                 <View style={styles.modalFooter}>
                   <View style={styles.totalRowModal}>
-                    <Text style={styles.totalLabelModal}>total to add</Text>
-                    <Text style={styles.totalAmtModal}>${scannedTotal.toFixed(2)}</Text>
+                    <Text style={[styles.totalLabelModal, { color: tc.mutedForeground }]}>total to add</Text>
+                    <Text style={[styles.totalAmtModal, { color: tc.foreground }]}>${scannedTotal.toFixed(2)}</Text>
                   </View>
                   <TouchableOpacity style={styles.addBtn} onPress={handleAddTobudget} activeOpacity={0.85}>
                     <LinearGradient colors={["#6355E8", "#8B5CF6"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.addBtnGrad}>
@@ -600,50 +610,54 @@ export default function BudgetScreen() {
       {/* ── New category modal ── */}
       <Modal visible={catModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalSheet, { maxHeight: "85%" }]}>
-            <View style={styles.modalHandle} />
+          <View style={[styles.modalSheet, { backgroundColor: tc.card, maxHeight: "85%" }]}>
+            <View style={[styles.modalHandle, { backgroundColor: tc.border }]} />
             <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>new category</Text>
-              <TouchableOpacity onPress={() => setCatModal(false)} style={styles.closeBtn}>
-                <Feather name="x" size={20} color={colors.light.mutedForeground} />
+              <Text style={[styles.modalTitle, { color: tc.foreground }]}>new category</Text>
+              <TouchableOpacity onPress={() => setCatModal(false)} style={[styles.closeBtn, { backgroundColor: tc.muted }]}>
+                <Feather name="x" size={20} color={tc.mutedForeground} />
               </TouchableOpacity>
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={styles.catFieldLabel}>category name</Text>
+              <Text style={[styles.catFieldLabel, { color: tc.mutedForeground }]}>category name</Text>
               <TextInput
-                style={styles.catInput}
+                style={[styles.catInput, { backgroundColor: tc.muted, color: tc.foreground, borderColor: tc.border }]}
                 placeholder="e.g. Gym & Fitness"
-                placeholderTextColor={colors.light.mutedForeground}
+                placeholderTextColor={tc.mutedForeground}
                 value={newCatName}
                 onChangeText={setNewCatName}
               />
 
-              <Text style={styles.catFieldLabel}>monthly budget ($)</Text>
+              <Text style={[styles.catFieldLabel, { color: tc.mutedForeground }]}>monthly budget ($)</Text>
               <TextInput
-                style={styles.catInput}
+                style={[styles.catInput, { backgroundColor: tc.muted, color: tc.foreground, borderColor: tc.border }]}
                 placeholder="e.g. 60"
-                placeholderTextColor={colors.light.mutedForeground}
+                placeholderTextColor={tc.mutedForeground}
                 value={newCatBudget}
                 onChangeText={setNewCatBudget}
                 keyboardType="numeric"
               />
 
-              <Text style={styles.catFieldLabel}>icon</Text>
+              <Text style={[styles.catFieldLabel, { color: tc.mutedForeground }]}>icon</Text>
               <View style={styles.iconGrid}>
                 {ICON_OPTIONS.map((icon) => (
                   <TouchableOpacity
                     key={icon}
-                    style={[styles.iconOption, newCatIcon === icon && { borderColor: newCatColor, backgroundColor: newCatColor + "18" }]}
+                    style={[
+                      styles.iconOption,
+                      { borderColor: tc.border },
+                      newCatIcon === icon && { borderColor: newCatColor, backgroundColor: newCatColor + "18" },
+                    ]}
                     onPress={() => setNewCatIcon(icon)}
                     activeOpacity={0.7}
                   >
-                    <Feather name={icon as any} size={18} color={newCatIcon === icon ? newCatColor : colors.light.mutedForeground} />
+                    <Feather name={icon as any} size={18} color={newCatIcon === icon ? newCatColor : tc.mutedForeground} />
                   </TouchableOpacity>
                 ))}
               </View>
 
-              <Text style={styles.catFieldLabel}>color</Text>
+              <Text style={[styles.catFieldLabel, { color: tc.mutedForeground }]}>color</Text>
               <View style={styles.colorRow}>
                 {COLOR_OPTIONS.map((c) => (
                   <TouchableOpacity
@@ -659,11 +673,11 @@ export default function BudgetScreen() {
 
               {/* Preview */}
               {newCatName.trim() ? (
-                <View style={[styles.catPreview, { borderColor: newCatColor + "40" }]}>
+                <View style={[styles.catPreview, { backgroundColor: tc.muted, borderColor: newCatColor + "40" }]}>
                   <View style={[styles.catIcon, { backgroundColor: newCatColor + "18" }]}>
                     <Feather name={newCatIcon as any} size={16} color={newCatColor} />
                   </View>
-                  <Text style={styles.catPreviewName}>{newCatName}</Text>
+                  <Text style={[styles.catPreviewName, { color: tc.foreground }]}>{newCatName}</Text>
                   <Text style={[styles.catPreviewBudget, { color: newCatColor }]}>
                     ${newCatBudget || "0"}/mo
                   </Text>
@@ -680,7 +694,7 @@ export default function BudgetScreen() {
           </View>
         </View>
       </Modal>
-    </View>
+    </LinearGradient>
   );
 }
 
@@ -713,122 +727,122 @@ const styles = StyleSheet.create({
   funStatSub: { fontSize: 11, color: "rgba(255,255,255,0.6)", fontFamily: "Inter_400Regular", marginTop: 12, textAlign: "center" },
   section: { marginBottom: 20 },
   sectionRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
-  sectionTitle: { fontSize: 14, fontWeight: "700", color: colors.light.foreground, fontFamily: "Inter_700Bold" },
-  sectionSub: { fontSize: 12, color: colors.light.mutedForeground, fontFamily: "Inter_400Regular" },
+  sectionTitle: { fontSize: 14, fontWeight: "700", fontFamily: "Inter_700Bold" },
+  sectionSub: { fontSize: 12, fontFamily: "Inter_400Regular" },
   card: {
-    backgroundColor: colors.light.card, borderRadius: 18, padding: 16,
-    borderWidth: 1.5, borderColor: colors.light.border,
+    borderRadius: 18, padding: 16,
+    borderWidth: 1.5,
     shadowColor: "#000", shadowOpacity: 0.04, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 1,
   },
   chartLegend: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 8 },
   legendDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: "#6355E8" },
-  legendText: { fontSize: 11, color: colors.light.mutedForeground, fontFamily: "Inter_400Regular" },
-  trendNote: { fontSize: 12, color: colors.light.mutedForeground, fontFamily: "Inter_400Regular", marginTop: 10, fontStyle: "italic" },
+  legendText: { fontSize: 11, fontFamily: "Inter_400Regular" },
+  trendNote: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 10, fontStyle: "italic" },
   goalCard: {
-    backgroundColor: colors.light.card, borderRadius: 16, padding: 14,
-    marginBottom: 10, borderWidth: 1.5, borderColor: colors.light.border,
+    borderRadius: 16, padding: 14,
+    marginBottom: 10, borderWidth: 1.5,
   },
   goalCardRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 10 },
   goalIconCircle: { width: 42, height: 42, borderRadius: 21, justifyContent: "center", alignItems: "center" },
   goalIconText: { fontSize: 20 },
   goalCardInfo: { flex: 1 },
-  goalCardName: { fontSize: 14, fontWeight: "700", color: colors.light.foreground, fontFamily: "Inter_700Bold" },
-  goalCardSub: { fontSize: 12, color: colors.light.mutedForeground, fontFamily: "Inter_400Regular", marginTop: 2 },
+  goalCardName: { fontSize: 14, fontWeight: "700", fontFamily: "Inter_700Bold" },
+  goalCardSub: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 2 },
   goalCardPct: { fontSize: 16, fontWeight: "800", fontFamily: "Inter_700Bold", textAlign: "right" },
-  goalCardAmt: { fontSize: 11, color: colors.light.mutedForeground, fontFamily: "Inter_400Regular", textAlign: "right" },
-  goalBarTrack: { height: 6, borderRadius: 3, backgroundColor: colors.light.muted, overflow: "hidden" },
+  goalCardAmt: { fontSize: 11, fontFamily: "Inter_400Regular", textAlign: "right" },
+  goalBarTrack: { height: 6, borderRadius: 3, overflow: "hidden" },
   goalBarFill: { height: "100%", borderRadius: 3 },
   addCatBtn: {
     flexDirection: "row", alignItems: "center", gap: 5,
-    backgroundColor: colors.light.secondary, borderRadius: 10,
+    borderRadius: 10,
     paddingHorizontal: 10, paddingVertical: 6,
-    borderWidth: 1.5, borderColor: "#D8D3FA",
+    borderWidth: 1.5,
   },
-  addCatText: { fontSize: 12, color: colors.light.primary, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
+  addCatText: { fontSize: 12, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
   catCard: {
-    backgroundColor: colors.light.card, borderRadius: 16, padding: 14,
-    marginBottom: 8, borderWidth: 1.5, borderColor: colors.light.border,
+    borderRadius: 16, padding: 14,
+    marginBottom: 8, borderWidth: 1.5,
   },
   catRow: { flexDirection: "row", alignItems: "center", gap: 12 },
   catIcon: { width: 38, height: 38, borderRadius: 10, justifyContent: "center", alignItems: "center" },
   catInfo: { flex: 1, gap: 6 },
   catLabelRow: { flexDirection: "row", alignItems: "center", gap: 7 },
-  catLabel: { fontSize: 14, fontWeight: "600", color: colors.light.foreground, fontFamily: "Inter_600SemiBold" },
+  catLabel: { fontSize: 14, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
   overBadge: { backgroundColor: "#FEE2E2", borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 },
   overBadgeText: { fontSize: 10, color: "#DC2626", fontWeight: "700", fontFamily: "Inter_700Bold" },
-  catBarTrack: { height: 6, borderRadius: 3, backgroundColor: colors.light.muted, overflow: "hidden" },
+  catBarTrack: { height: 6, borderRadius: 3, overflow: "hidden" },
   catBarFill: { height: "100%", borderRadius: 3 },
   catAmounts: { alignItems: "flex-end" },
-  catSpent: { fontSize: 15, fontWeight: "700", color: colors.light.foreground, fontFamily: "Inter_700Bold" },
-  catBudget: { fontSize: 11, color: colors.light.mutedForeground, fontFamily: "Inter_400Regular" },
-  catTip: { fontSize: 12, color: colors.light.mutedForeground, fontFamily: "Inter_400Regular", marginTop: 8, fontStyle: "italic" },
-  dateGroup: { fontSize: 12, fontWeight: "700", color: colors.light.mutedForeground, fontFamily: "Inter_700Bold", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8, marginTop: 4 },
+  catSpent: { fontSize: 15, fontWeight: "700", fontFamily: "Inter_700Bold" },
+  catBudget: { fontSize: 11, fontFamily: "Inter_400Regular" },
+  catTip: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 8, fontStyle: "italic" },
+  dateGroup: { fontSize: 12, fontWeight: "700", fontFamily: "Inter_700Bold", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8, marginTop: 4 },
   txRow: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 4 },
   txIcon: { width: 36, height: 36, borderRadius: 10, justifyContent: "center", alignItems: "center" },
   txInfo: { flex: 1 },
   txNameRow: { flexDirection: "row", alignItems: "center", gap: 6 },
-  txName: { fontSize: 14, fontWeight: "600", color: colors.light.foreground, fontFamily: "Inter_600SemiBold" },
-  scannedBadge: { flexDirection: "row", alignItems: "center", gap: 3, backgroundColor: colors.light.secondary, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 },
-  scannedText: { fontSize: 9, color: colors.light.primary, fontWeight: "700", fontFamily: "Inter_700Bold" },
-  txTime: { fontSize: 12, color: colors.light.mutedForeground, fontFamily: "Inter_400Regular", marginTop: 1 },
+  txName: { fontSize: 14, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
+  scannedBadge: { flexDirection: "row", alignItems: "center", gap: 3, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 },
+  scannedText: { fontSize: 9, fontWeight: "700", fontFamily: "Inter_700Bold" },
+  txTime: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 1 },
   txAmount: { fontSize: 14, fontWeight: "700", color: "#EF4444", fontFamily: "Inter_700Bold" },
-  txDivider: { height: 1, backgroundColor: colors.light.border, marginVertical: 6 },
+  txDivider: { height: 1, marginVertical: 6 },
   fab: { position: "absolute", alignSelf: "center", borderRadius: 28, overflow: "hidden", shadowColor: "#6355E8", shadowOpacity: 0.4, shadowRadius: 14, shadowOffset: { width: 0, height: 4 }, elevation: 10 },
   fabGrad: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 22, paddingVertical: 14 },
   fabText: { color: "#fff", fontSize: 15, fontWeight: "700", fontFamily: "Inter_700Bold" },
   modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },
-  modalSheet: { backgroundColor: "#fff", borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingHorizontal: 20, paddingBottom: 36, maxHeight: "75%" },
-  modalHandle: { width: 36, height: 4, borderRadius: 2, backgroundColor: colors.light.border, alignSelf: "center", marginTop: 12, marginBottom: 16 },
+  modalSheet: { borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingHorizontal: 20, paddingBottom: 36, maxHeight: "75%" },
+  modalHandle: { width: 36, height: 4, borderRadius: 2, alignSelf: "center", marginTop: 12, marginBottom: 16 },
   scanningState: { alignItems: "center", paddingVertical: 40, gap: 12 },
-  scanningTitle: { fontSize: 18, fontWeight: "700", color: colors.light.foreground, fontFamily: "Inter_700Bold" },
-  scanningSub: { fontSize: 14, color: colors.light.mutedForeground, fontFamily: "Inter_400Regular" },
+  scanningTitle: { fontSize: 18, fontWeight: "700", fontFamily: "Inter_700Bold" },
+  scanningSub: { fontSize: 14, fontFamily: "Inter_400Regular" },
   modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 },
-  modalTitle: { fontSize: 18, fontWeight: "800", color: colors.light.foreground, fontFamily: "Inter_700Bold" },
-  modalSub: { fontSize: 13, color: colors.light.mutedForeground, fontFamily: "Inter_400Regular", marginTop: 2 },
-  closeBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.light.muted, justifyContent: "center", alignItems: "center" },
+  modalTitle: { fontSize: 18, fontWeight: "800", fontFamily: "Inter_700Bold" },
+  modalSub: { fontSize: 13, fontFamily: "Inter_400Regular", marginTop: 2 },
+  closeBtn: { width: 32, height: 32, borderRadius: 16, justifyContent: "center", alignItems: "center" },
   itemList: { maxHeight: 260 },
-  itemRow: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.light.border },
-  itemCheck: { width: 22, height: 22, borderRadius: 6, borderWidth: 2, borderColor: colors.light.border, justifyContent: "center", alignItems: "center" },
-  itemCheckOn: { backgroundColor: colors.light.primary, borderColor: colors.light.primary },
-  itemName: { flex: 1, fontSize: 14, fontFamily: "Inter_500Medium", color: colors.light.foreground },
-  itemAmt: { fontSize: 14, fontWeight: "700", color: colors.light.foreground, fontFamily: "Inter_700Bold" },
+  itemRow: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 12, borderBottomWidth: 1 },
+  itemCheck: { width: 22, height: 22, borderRadius: 6, borderWidth: 2, justifyContent: "center", alignItems: "center" },
+  itemCheckOn: {},
+  itemName: { flex: 1, fontSize: 14, fontFamily: "Inter_500Medium" },
+  itemAmt: { fontSize: 14, fontWeight: "700", fontFamily: "Inter_700Bold" },
   itemDim: { opacity: 0.4 },
   modalFooter: { paddingTop: 16, gap: 12 },
   totalRowModal: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
-  totalLabelModal: { fontSize: 14, color: colors.light.mutedForeground, fontFamily: "Inter_500Medium" },
-  totalAmtModal: { fontSize: 20, fontWeight: "800", color: colors.light.foreground, fontFamily: "Inter_700Bold" },
+  totalLabelModal: { fontSize: 14, fontFamily: "Inter_500Medium" },
+  totalAmtModal: { fontSize: 20, fontWeight: "800", fontFamily: "Inter_700Bold" },
   addBtn: { borderRadius: 16, overflow: "hidden" },
   addBtnGrad: { height: 52, flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 8 },
   addBtnText: { color: "#fff", fontSize: 16, fontWeight: "700", fontFamily: "Inter_700Bold" },
-  catFieldLabel: { fontSize: 13, fontWeight: "600", color: colors.light.mutedForeground, fontFamily: "Inter_600SemiBold", marginBottom: 8, marginTop: 14 },
+  catFieldLabel: { fontSize: 13, fontWeight: "600", fontFamily: "Inter_600SemiBold", marginBottom: 8, marginTop: 14 },
   catInput: {
-    backgroundColor: colors.light.muted, borderRadius: 12, paddingHorizontal: 14, height: 48,
-    fontSize: 15, color: colors.light.foreground, fontFamily: "Inter_400Regular",
-    borderWidth: 1.5, borderColor: colors.light.border,
+    borderRadius: 12, paddingHorizontal: 14, height: 48,
+    fontSize: 15, fontFamily: "Inter_400Regular",
+    borderWidth: 1.5,
   },
   iconGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
-  iconOption: { width: 44, height: 44, borderRadius: 12, borderWidth: 2, borderColor: colors.light.border, justifyContent: "center", alignItems: "center" },
+  iconOption: { width: 44, height: 44, borderRadius: 12, borderWidth: 2, justifyContent: "center", alignItems: "center" },
   colorRow: { flexDirection: "row", gap: 10, flexWrap: "wrap" },
   colorSwatch: { width: 36, height: 36, borderRadius: 18, justifyContent: "center", alignItems: "center" },
   colorSwatchSelected: { borderWidth: 3, borderColor: "#fff", shadowColor: "#000", shadowOpacity: 0.2, shadowRadius: 4, shadowOffset: { width: 0, height: 2 }, elevation: 3 },
   catPreview: {
     flexDirection: "row", alignItems: "center", gap: 12,
-    backgroundColor: colors.light.muted, borderRadius: 14, padding: 14,
+    borderRadius: 14, padding: 14,
     marginTop: 16, borderWidth: 1.5,
   },
-  catPreviewName: { flex: 1, fontSize: 14, fontWeight: "600", color: colors.light.foreground, fontFamily: "Inter_600SemiBold" },
+  catPreviewName: { flex: 1, fontSize: 14, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
   catPreviewBudget: { fontSize: 14, fontWeight: "700", fontFamily: "Inter_700Bold" },
   createCatBtn: { borderRadius: 16, overflow: "hidden", marginTop: 20, marginBottom: 8 },
   createCatGrad: { height: 52, flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 8 },
   createCatText: { color: "#fff", fontSize: 16, fontWeight: "700", fontFamily: "Inter_700Bold" },
   emptyState: {
     alignItems: "center", gap: 8, padding: 28,
-    backgroundColor: colors.light.card, borderRadius: 18,
-    borderWidth: 1.5, borderColor: colors.light.border, borderStyle: "dashed",
+    borderRadius: 18,
+    borderWidth: 1.5, borderStyle: "dashed",
   },
   emptyEmoji: { fontSize: 36 },
-  emptyTitle: { fontSize: 16, fontWeight: "700", color: colors.light.foreground, fontFamily: "Inter_700Bold" },
-  emptySub: { fontSize: 13, color: colors.light.mutedForeground, fontFamily: "Inter_400Regular", textAlign: "center", lineHeight: 18 },
+  emptyTitle: { fontSize: 16, fontWeight: "700", fontFamily: "Inter_700Bold" },
+  emptySub: { fontSize: 13, fontFamily: "Inter_400Regular", textAlign: "center", lineHeight: 18 },
   emptyBtn: { borderRadius: 14, overflow: "hidden", marginTop: 6, width: "100%" },
   emptyBtnGrad: { height: 46, flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 8 },
   emptyBtnText: { color: "#fff", fontSize: 14, fontWeight: "700", fontFamily: "Inter_700Bold" },

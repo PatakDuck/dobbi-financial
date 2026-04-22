@@ -9,7 +9,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import * as Haptics from "expo-haptics";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useAuth } from "@/context/AuthContext";
-import colors from "@/constants/colors";
+import { useColors } from "@/hooks/useColors";
 
 interface Deal {
   id: string;
@@ -267,6 +267,7 @@ function getPersonalizedDeals(deals: Deal[], topSpend: string, interests: string
 export default function DiscountsScreen() {
   const insets = useSafeAreaInsets();
   const { user, updateXP } = useAuth();
+  const tc = useColors();
   const [category, setCategory] = useState("All");
   const [search, setSearch] = useState("");
   const [claimed, setClaimed] = useState<Record<string, boolean>>({});
@@ -324,7 +325,7 @@ export default function DiscountsScreen() {
   };
 
   return (
-    <View style={[styles.root, { backgroundColor: colors.light.background }]}>
+    <LinearGradient colors={tc.backgroundGradient as [string, string, ...string[]]} style={styles.root}>
       <LinearGradient
         colors={["#2D1B69", "#3D2A8A"]}
         style={[styles.header, { paddingTop: topPad + 16 }]}
@@ -359,16 +360,24 @@ export default function DiscountsScreen() {
         </View>
       </LinearGradient>
 
-      <View style={styles.catWrap}>
+      <View style={[styles.catWrap, { backgroundColor: tc.card, borderBottomColor: tc.border }]}>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.catScroll}>
           {CATEGORIES.map((c) => (
             <TouchableOpacity
               key={c}
-              style={[styles.catPill, c === category && styles.catPillActive]}
+              style={[
+                styles.catPill,
+                { backgroundColor: tc.muted, borderColor: tc.border },
+                c === category && { backgroundColor: tc.secondary, borderColor: tc.primary },
+              ]}
               onPress={() => setCategory(c)}
               activeOpacity={0.75}
             >
-              <Text style={[styles.catText, c === category && styles.catTextActive]}>{c}</Text>
+              <Text style={[
+                styles.catText,
+                { color: tc.mutedForeground },
+                c === category && { color: tc.primary },
+              ]}>{c}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
@@ -380,11 +389,11 @@ export default function DiscountsScreen() {
       >
         {/* Quick start banner */}
         {showBanner && (
-          <View style={styles.quickStartCard}>
+          <View style={[styles.quickStartCard, { backgroundColor: tc.card, borderColor: tc.border }]}>
             <TouchableOpacity style={styles.quickStartDismiss} onPress={dismissBanner} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
-              <Feather name="x" size={15} color={colors.light.mutedForeground} />
+              <Feather name="x" size={15} color={tc.mutedForeground} />
             </TouchableOpacity>
-            <Text style={styles.quickStartTitle}>👋 here's how dobbi works</Text>
+            <Text style={[styles.quickStartTitle, { color: tc.foreground }]}>👋 here's how dobbi works</Text>
             <View style={styles.quickStartSteps}>
               {[
                 { num: "1", icon: "camera",       text: "Scan a receipt to log spending" },
@@ -392,16 +401,16 @@ export default function DiscountsScreen() {
                 { num: "3", icon: "tag",           text: "Claim student deals and save" },
               ].map((s) => (
                 <View key={s.num} style={styles.quickStartStep}>
-                  <View style={styles.quickStartNum}>
-                    <Text style={styles.quickStartNumText}>{s.num}</Text>
+                  <View style={[styles.quickStartNum, { backgroundColor: tc.secondary }]}>
+                    <Text style={[styles.quickStartNumText, { color: tc.primary }]}>{s.num}</Text>
                   </View>
-                  <Feather name={s.icon as any} size={15} color={colors.light.primary} />
-                  <Text style={styles.quickStartStepText}>{s.text}</Text>
+                  <Feather name={s.icon as any} size={15} color={tc.primary} />
+                  <Text style={[styles.quickStartStepText, { color: tc.foreground }]}>{s.text}</Text>
                 </View>
               ))}
             </View>
-            <TouchableOpacity style={styles.quickStartBtn} onPress={dismissBanner} activeOpacity={0.8}>
-              <Text style={styles.quickStartBtnText}>got it, let's go →</Text>
+            <TouchableOpacity style={[styles.quickStartBtn, { backgroundColor: tc.secondary, borderColor: tc.border }]} onPress={dismissBanner} activeOpacity={0.8}>
+              <Text style={[styles.quickStartBtnText, { color: tc.primary }]}>got it, let's go →</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -409,78 +418,84 @@ export default function DiscountsScreen() {
         {/* For You section */}
         {forYouDeals.length > 0 && category === "All" && !search && (
           <>
-            <View style={styles.forYouHeader}>
+            <View style={[styles.forYouHeader, { backgroundColor: tc.muted, borderColor: tc.border }]}>
               <View style={styles.forYouTitleRow}>
                 <Text style={styles.forYouEmoji}>✨</Text>
                 <View>
-                  <Text style={styles.forYouTitle}>picked for you</Text>
-                  <Text style={styles.forYouSub}>based on your interests</Text>
+                  <Text style={[styles.forYouTitle, { color: tc.foreground }]}>picked for you</Text>
+                  <Text style={[styles.forYouSub, { color: tc.mutedForeground }]}>based on your interests</Text>
                 </View>
               </View>
               {userInterests.length > 0 && (
                 <View style={styles.interestPills}>
                   {userInterests.slice(0, 3).map((interest) => (
-                    <View key={interest} style={styles.interestPill}>
-                      <Feather name={(INTEREST_ICONS[interest] ?? "tag") as any} size={10} color={colors.light.primary} />
-                      <Text style={styles.interestPillText}>{interest}</Text>
+                    <View key={interest} style={[styles.interestPill, { backgroundColor: tc.secondary }]}>
+                      <Feather name={(INTEREST_ICONS[interest] ?? "tag") as any} size={10} color={tc.primary} />
+                      <Text style={[styles.interestPillText, { color: tc.primary }]}>{interest}</Text>
                     </View>
                   ))}
                 </View>
               )}
             </View>
             {forYouDeals.map((d) => (
-              <DealCard key={`fy-${d.id}`} deal={d} isClaimed={!!claimed[d.id]} onClaim={handleClaim} highlighted />
+              <DealCard key={`fy-${d.id}`} deal={d} isClaimed={!!claimed[d.id]} onClaim={handleClaim} highlighted tc={tc} />
             ))}
-            <View style={styles.divider} />
+            <View style={[styles.divider, { backgroundColor: tc.border }]} />
           </>
         )}
 
         {hotDeals.length > 0 && (
           <>
             <View style={styles.sectionRow}>
-              <Text style={styles.sectionTitle}>🔥 hot right now</Text>
-              <Text style={styles.sectionCount}>{hotDeals.length} deals</Text>
+              <Text style={[styles.sectionTitle, { color: tc.foreground }]}>🔥 hot right now</Text>
+              <Text style={[styles.sectionCount, { color: tc.mutedForeground }]}>{hotDeals.length} deals</Text>
             </View>
             {hotDeals.map((d) => (
-              <DealCard key={d.id} deal={d} isClaimed={!!claimed[d.id]} onClaim={handleClaim} />
+              <DealCard key={d.id} deal={d} isClaimed={!!claimed[d.id]} onClaim={handleClaim} tc={tc} />
             ))}
             {otherDeals.length > 0 && (
               <View style={styles.sectionRow}>
-                <Text style={styles.sectionTitle}>✦ all deals</Text>
-                <Text style={styles.sectionCount}>{otherDeals.length} more</Text>
+                <Text style={[styles.sectionTitle, { color: tc.foreground }]}>✦ all deals</Text>
+                <Text style={[styles.sectionCount, { color: tc.mutedForeground }]}>{otherDeals.length} more</Text>
               </View>
             )}
           </>
         )}
 
         {otherDeals.map((d) => (
-          <DealCard key={d.id} deal={d} isClaimed={!!claimed[d.id]} onClaim={handleClaim} />
+          <DealCard key={d.id} deal={d} isClaimed={!!claimed[d.id]} onClaim={handleClaim} tc={tc} />
         ))}
 
         {filtered.length === 0 && (
           <View style={styles.emptyState}>
             <Text style={styles.emptyEmoji}>🔍</Text>
-            <Text style={styles.emptyTitle}>no deals found</Text>
-            <Text style={styles.emptySub}>try a different search or category bestie</Text>
+            <Text style={[styles.emptyTitle, { color: tc.foreground }]}>no deals found</Text>
+            <Text style={[styles.emptySub, { color: tc.mutedForeground }]}>try a different search or category bestie</Text>
           </View>
         )}
       </ScrollView>
-    </View>
+    </LinearGradient>
   );
 }
 
 function DealCard({
-  deal, isClaimed, onClaim, highlighted,
+  deal, isClaimed, onClaim, highlighted, tc,
 }: {
   deal: Deal;
   isClaimed: boolean;
   onClaim: (d: Deal) => void;
   highlighted?: boolean;
+  tc: ReturnType<typeof useColors>;
 }) {
   const tagStyle = TAG_STYLES[deal.tagType];
 
   return (
-    <View style={[styles.card, isClaimed && styles.cardClaimed, highlighted && styles.cardHighlighted]}>
+    <View style={[
+      styles.card,
+      { backgroundColor: tc.card, borderColor: tc.border },
+      isClaimed && styles.cardClaimed,
+      highlighted && styles.cardHighlighted,
+    ]}>
       <View style={[styles.cardAccent, { backgroundColor: deal.accentColor }]} />
       <View style={styles.cardBody}>
         <View style={styles.cardTop}>
@@ -488,23 +503,23 @@ function DealCard({
             <Text style={styles.brandEmoji}>{deal.emoji}</Text>
           </View>
           <View style={styles.brandInfo}>
-            <Text style={styles.brandName}>{deal.brand}</Text>
-            <Text style={styles.brandCat}>{deal.category}</Text>
+            <Text style={[styles.brandName, { color: tc.foreground }]}>{deal.brand}</Text>
+            <Text style={[styles.brandCat, { color: tc.mutedForeground }]}>{deal.category}</Text>
           </View>
           <View style={[styles.tagBadge, { backgroundColor: tagStyle.bg }]}>
             <Text style={[styles.tagText, { color: tagStyle.text }]}>{deal.tag}</Text>
           </View>
         </View>
 
-        <Text style={styles.dealDesc}>{deal.description}</Text>
+        <Text style={[styles.dealDesc, { color: tc.mutedForeground }]}>{deal.description}</Text>
 
         <View style={styles.priceRow}>
           <View style={styles.priceBlock}>
-            <Text style={styles.priceBefore}>{deal.originalPrice}</Text>
-            <Text style={styles.priceAfter}>{deal.studentPrice}</Text>
+            <Text style={[styles.priceBefore, { color: tc.mutedForeground }]}>{deal.originalPrice}</Text>
+            <Text style={[styles.priceAfter, { color: tc.primary }]}>{deal.studentPrice}</Text>
           </View>
           <View style={styles.xpChip}>
-            <Feather name="zap" size={11} color={colors.light.gold} />
+            <Feather name="zap" size={11} color={tc.gold} />
             <Text style={styles.xpChipText}>+{deal.xpReward} XP</Text>
           </View>
         </View>
@@ -539,19 +554,19 @@ function DealCard({
 const styles = StyleSheet.create({
   root: { flex: 1 },
   quickStartCard: {
-    backgroundColor: colors.light.card, borderRadius: 18, padding: 18,
-    borderWidth: 1.5, borderColor: "#D8D3FA", marginBottom: 16,
+    borderRadius: 18, padding: 18,
+    borderWidth: 1.5, marginBottom: 16,
     shadowColor: "#6355E8", shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 2,
   },
   quickStartDismiss: { position: "absolute", top: 14, right: 14, zIndex: 1 },
-  quickStartTitle: { fontSize: 15, fontWeight: "800", color: colors.light.foreground, fontFamily: "Inter_700Bold", marginBottom: 14 },
+  quickStartTitle: { fontSize: 15, fontWeight: "800", fontFamily: "Inter_700Bold", marginBottom: 14 },
   quickStartSteps: { gap: 12, marginBottom: 16 },
   quickStartStep: { flexDirection: "row", alignItems: "center", gap: 10 },
-  quickStartNum: { width: 22, height: 22, borderRadius: 11, backgroundColor: colors.light.secondary, justifyContent: "center", alignItems: "center" },
-  quickStartNumText: { fontSize: 11, fontWeight: "800", color: colors.light.primary, fontFamily: "Inter_700Bold" },
-  quickStartStepText: { fontSize: 14, color: colors.light.foreground, fontFamily: "Inter_500Medium", flex: 1 },
-  quickStartBtn: { backgroundColor: colors.light.secondary, borderRadius: 12, paddingVertical: 10, alignItems: "center", borderWidth: 1.5, borderColor: "#D8D3FA" },
-  quickStartBtnText: { fontSize: 13, fontWeight: "700", color: colors.light.primary, fontFamily: "Inter_700Bold" },
+  quickStartNum: { width: 22, height: 22, borderRadius: 11, justifyContent: "center", alignItems: "center" },
+  quickStartNumText: { fontSize: 11, fontWeight: "800", fontFamily: "Inter_700Bold" },
+  quickStartStepText: { fontSize: 14, fontFamily: "Inter_500Medium", flex: 1 },
+  quickStartBtn: { borderRadius: 12, paddingVertical: 10, alignItems: "center", borderWidth: 1.5 },
+  quickStartBtnText: { fontSize: 13, fontWeight: "700", fontFamily: "Inter_700Bold" },
   header: { paddingHorizontal: 20, paddingBottom: 16, gap: 6 },
   headerTitle: { fontSize: 26, fontWeight: "800", color: "#fff", fontFamily: "Inter_700Bold" },
   headerSub: { fontSize: 13, color: "rgba(255,255,255,0.6)", fontFamily: "Inter_400Regular" },
@@ -570,29 +585,27 @@ const styles = StyleSheet.create({
   },
   searchIcon: {},
   searchInput: { flex: 1, fontSize: 14, color: "#fff", fontFamily: "Inter_400Regular" },
-  catWrap: { backgroundColor: colors.light.card, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: colors.light.border },
+  catWrap: { paddingVertical: 10, borderBottomWidth: 1 },
   catScroll: { paddingHorizontal: 16, gap: 8 },
-  catPill: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: colors.light.muted, borderWidth: 1.5, borderColor: colors.light.border },
-  catPillActive: { backgroundColor: colors.light.secondary, borderColor: colors.light.primary },
-  catText: { fontSize: 13, color: colors.light.mutedForeground, fontFamily: "Inter_500Medium" },
-  catTextActive: { color: colors.light.primary, fontFamily: "Inter_600SemiBold" },
+  catPill: { paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, borderWidth: 1.5 },
+  catText: { fontSize: 13, fontFamily: "Inter_500Medium" },
   list: { padding: 16, gap: 10 },
-  forYouHeader: { backgroundColor: "#F5F3FF", borderRadius: 16, padding: 14, marginBottom: 4, borderWidth: 1.5, borderColor: "#DDD6FE" },
+  forYouHeader: { borderRadius: 16, padding: 14, marginBottom: 4, borderWidth: 1.5 },
   forYouTitleRow: { flexDirection: "row", alignItems: "center", gap: 10, marginBottom: 8 },
   forYouEmoji: { fontSize: 22 },
-  forYouTitle: { fontSize: 15, fontWeight: "700", color: "#4C1D95", fontFamily: "Inter_700Bold" },
-  forYouSub: { fontSize: 12, color: "#7C3AED", fontFamily: "Inter_400Regular", marginTop: 1 },
+  forYouTitle: { fontSize: 15, fontWeight: "700", fontFamily: "Inter_700Bold" },
+  forYouSub: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 1 },
   interestPills: { flexDirection: "row", gap: 6, flexWrap: "wrap" },
-  interestPill: { flexDirection: "row", alignItems: "center", gap: 4, backgroundColor: "#EDE9FE", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
-  interestPillText: { fontSize: 11, color: colors.light.primary, fontFamily: "Inter_600SemiBold" },
-  divider: { height: 1, backgroundColor: colors.light.border, marginVertical: 8 },
+  interestPill: { flexDirection: "row", alignItems: "center", gap: 4, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
+  interestPillText: { fontSize: 11, fontFamily: "Inter_600SemiBold" },
+  divider: { height: 1, marginVertical: 8 },
   sectionRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 4, marginTop: 8 },
-  sectionTitle: { fontSize: 14, fontWeight: "700", color: colors.light.foreground, fontFamily: "Inter_700Bold" },
-  sectionCount: { fontSize: 12, color: colors.light.mutedForeground, fontFamily: "Inter_400Regular" },
+  sectionTitle: { fontSize: 14, fontWeight: "700", fontFamily: "Inter_700Bold" },
+  sectionCount: { fontSize: 12, fontFamily: "Inter_400Regular" },
   card: {
-    backgroundColor: colors.light.card, borderRadius: 18,
+    borderRadius: 18,
     flexDirection: "row", overflow: "hidden",
-    borderWidth: 1.5, borderColor: colors.light.border,
+    borderWidth: 1.5,
     shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 8, shadowOffset: { width: 0, height: 2 }, elevation: 2,
   },
   cardClaimed: { borderColor: "#A7F3D0", backgroundColor: "#F9FFFD" },
@@ -603,15 +616,15 @@ const styles = StyleSheet.create({
   brandIcon: { width: 42, height: 42, borderRadius: 12, justifyContent: "center", alignItems: "center" },
   brandEmoji: { fontSize: 20 },
   brandInfo: { flex: 1 },
-  brandName: { fontSize: 15, fontWeight: "700", color: colors.light.foreground, fontFamily: "Inter_700Bold" },
-  brandCat: { fontSize: 11, color: colors.light.mutedForeground, fontFamily: "Inter_400Regular", marginTop: 1 },
+  brandName: { fontSize: 15, fontWeight: "700", fontFamily: "Inter_700Bold" },
+  brandCat: { fontSize: 11, fontFamily: "Inter_400Regular", marginTop: 1 },
   tagBadge: { borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
   tagText: { fontSize: 11, fontWeight: "800", fontFamily: "Inter_700Bold", letterSpacing: 0.3 },
-  dealDesc: { fontSize: 13, color: colors.light.mutedForeground, fontFamily: "Inter_400Regular", lineHeight: 18 },
+  dealDesc: { fontSize: 13, fontFamily: "Inter_400Regular", lineHeight: 18 },
   priceRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   priceBlock: { flexDirection: "row", alignItems: "center", gap: 8 },
-  priceBefore: { fontSize: 12, color: colors.light.mutedForeground, textDecorationLine: "line-through", fontFamily: "Inter_400Regular" },
-  priceAfter: { fontSize: 15, fontWeight: "700", color: colors.light.accent, fontFamily: "Inter_700Bold" },
+  priceBefore: { fontSize: 12, textDecorationLine: "line-through", fontFamily: "Inter_400Regular" },
+  priceAfter: { fontSize: 15, fontWeight: "700", fontFamily: "Inter_700Bold" },
   xpChip: { flexDirection: "row", alignItems: "center", gap: 3, backgroundColor: "#FEF3C7", borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
   xpChipText: { fontSize: 11, fontWeight: "700", color: "#92400E", fontFamily: "Inter_700Bold" },
   claimBtn: { borderRadius: 12, overflow: "hidden" },
@@ -622,6 +635,6 @@ const styles = StyleSheet.create({
   btnRow: { flexDirection: "row", alignItems: "center", gap: 7 },
   emptyState: { alignItems: "center", paddingVertical: 48, gap: 8 },
   emptyEmoji: { fontSize: 40 },
-  emptyTitle: { fontSize: 16, fontWeight: "700", color: colors.light.foreground, fontFamily: "Inter_700Bold" },
-  emptySub: { fontSize: 14, color: colors.light.mutedForeground, fontFamily: "Inter_400Regular" },
+  emptyTitle: { fontSize: 16, fontWeight: "700", fontFamily: "Inter_700Bold" },
+  emptySub: { fontSize: 14, fontFamily: "Inter_400Regular" },
 });
