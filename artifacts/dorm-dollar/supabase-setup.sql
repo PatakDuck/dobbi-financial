@@ -1,10 +1,10 @@
 -- ============================================================
 --  Dobbi – full database setup
---  Run this in Supabase → SQL Editor → New query → Run
+--  Safe to run even if tables already exist
 -- ============================================================
 
--- 1. Profiles (one row per user, auto-created on signup)
-create table public.profiles (
+-- 1. Profiles
+create table if not exists public.profiles (
   id            uuid primary key references auth.users on delete cascade,
   name          text        not null default '',
   avatar        text        not null default '🎓',
@@ -16,7 +16,7 @@ create table public.profiles (
 );
 
 -- 2. Badges
-create table public.badges (
+create table if not exists public.badges (
   id         uuid primary key default gen_random_uuid(),
   user_id    uuid    not null references public.profiles on delete cascade,
   badge_id   text    not null,
@@ -25,7 +25,7 @@ create table public.badges (
 );
 
 -- 3. Transactions
-create table public.transactions (
+create table if not exists public.transactions (
   id         uuid primary key default gen_random_uuid(),
   user_id    uuid    not null references public.profiles on delete cascade,
   name       text    not null,
@@ -39,8 +39,25 @@ create table public.transactions (
   created_at timestamptz      default now()
 );
 
--- 4. Budget categories
-create table public.budget_categories (
+-- 4. Conversations (chat history)
+create table if not exists public.conversations (
+  id         uuid primary key default gen_random_uuid(),
+  user_id    uuid not null references public.profiles on delete cascade,
+  title      text not null default 'Dobbi Chat',
+  created_at timestamptz default now()
+);
+
+-- 5. Messages (per conversation)
+create table if not exists public.messages (
+  id              uuid primary key default gen_random_uuid(),
+  conversation_id uuid not null references public.conversations on delete cascade,
+  role            text not null,
+  content         text not null,
+  created_at      timestamptz default now()
+);
+
+-- 6. Budget categories
+create table if not exists public.budget_categories (
   category_id text    not null,
   user_id     uuid    not null references public.profiles on delete cascade,
   label       text    not null,
@@ -61,18 +78,30 @@ begin
     '🎓'
   );
   return new;
+exception when others then
+  return new;
 end;
 $$;
 
+drop trigger if exists on_auth_user_created on auth.users;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
--- 6. Row-Level Security (users can only access their own data)
+-- 6. Row-Level Security
 alter table public.profiles          enable row level security;
 alter table public.badges            enable row level security;
 alter table public.transactions      enable row level security;
 alter table public.budget_categories enable row level security;
+alter table public.conversations     enable row level security;
+alter table public.messages          enable row level security;
+
+drop policy if exists "own profile"            on public.profiles;
+drop policy if exists "own badges"             on public.badges;
+drop policy if exists "own transactions"       on public.transactions;
+drop policy if exists "own budget categories"  on public.budget_categories;
+drop policy if exists "own conversations"      on public.conversations;
+drop policy if exists "own messages"           on public.messages;
 
 create policy "own profile"
   on public.profiles for all using (auth.uid() = id);
@@ -85,3 +114,13 @@ create policy "own transactions"
 
 create policy "own budget categories"
   on public.budget_categories for all using (auth.uid() = user_id);
+
+create policy "own conversations"
+  on public.conversations for all using (auth.uid() = user_id);
+
+create policy "own messages"
+  on public.messages for all
+  using (exists (
+    select 1 from public.conversations c
+    where c.id = conversation_id and c.user_id = auth.uid()
+  ));

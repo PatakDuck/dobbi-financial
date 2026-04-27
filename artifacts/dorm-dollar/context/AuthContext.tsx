@@ -62,14 +62,24 @@ const AuthContext = createContext<AuthContextType>({
   completeOnboarding: async () => {},
 });
 
-async function fetchProfile(userId: string): Promise<User | null> {
-  const { data, error } = await supabase
+async function fetchProfile(userId: string, fallbackName?: string): Promise<User | null> {
+  let { data } = await supabase
     .from("profiles")
     .select("*")
     .eq("id", userId)
     .single();
 
-  if (error || !data) return null;
+  // Profile missing (trigger didn't run) — create it now
+  if (!data) {
+    const { data: created } = await supabase
+      .from("profiles")
+      .insert({ id: userId, name: fallbackName ?? "Student", avatar: "🎓" })
+      .select()
+      .single();
+    data = created;
+  }
+
+  if (!data) return null;
 
   const { data: badges } = await supabase
     .from("badges")
@@ -104,7 +114,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
-          const profile = await fetchProfile(session.user.id);
+          const name = session.user.user_metadata?.name as string | undefined;
+          const profile = await fetchProfile(session.user.id, name);
           if (profile) setUser({ ...profile, email: session.user.email ?? "" });
         }
       } catch {
@@ -117,7 +128,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
-        const profile = await fetchProfile(session.user.id);
+        const name = session.user.user_metadata?.name as string | undefined;
+        const profile = await fetchProfile(session.user.id, name);
         if (profile) setUser({ ...profile, email: session.user.email ?? "" });
       } else {
         setUser(null);
@@ -128,7 +140,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    console.log("[login]", { userId: data?.user?.id, error: error?.message, status: error?.status });
     return !error;
   };
 
@@ -143,11 +156,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       password,
       options: { data: { name } },
     });
+    console.log("[signup]", { userId: data?.user?.id, hasSession: !!data?.session, error: error?.message });
     if (error) return { error: error.message };
-    // If email confirmation is required, session will be null — sign in immediately
     if (!data.session) {
-      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password });
-      if (signInError) return { error: "Account created! Check your email to confirm, then sign in." };
+      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ email, password });
+      console.log("[signup auto-login]", { userId: signInData?.user?.id, error: signInError?.message });
+      if (signInError) return { error: "Email confirmation is required — please turn it off in Supabase dashboard (Authentication → Providers → Email → uncheck Confirm email)" };
     }
     return { error: null };
   };

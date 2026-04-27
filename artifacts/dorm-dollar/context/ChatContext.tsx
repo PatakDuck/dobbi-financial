@@ -15,7 +15,23 @@ interface ChatContextType {
   isTyping: boolean;
 }
 
-const API_URL = process.env["EXPO_PUBLIC_API_URL"] ?? "";
+const GROQ_KEY = process.env["EXPO_PUBLIC_GROQ_KEY"] ?? "";
+const GROQ_URL = "https://api.groq.com/openai/v1/chat/completions";
+
+const SYSTEM_PROMPT = `You are Dobbi, a Gen-Z financial assistant built for college students. You're like a smart friend who actually knows money — helpful, fun, and never preachy. You speak casually, keep replies short (3-5 sentences max), and use emojis occasionally.
+
+You help with:
+- Budgeting and tracking spending
+- Finding student deals and discounts
+- Saving money and hitting financial goals
+- Understanding basic finance without the boring lecture
+
+Rules:
+- Never give long walls of text
+- If someone is stressed about money, be supportive first, practical second
+- Use "bestie", "fr", "no cap" occasionally but don't overdo it
+- Always end with a follow-up question or action to keep the conversation going
+- Never recommend specific stocks or crypto`;
 
 const OPENER: ChatMessage = {
   id: "1",
@@ -44,7 +60,6 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  // Load or create today's conversation when user signs in
   useEffect(() => {
     if (!user) {
       setMessages([OPENER]);
@@ -124,24 +139,37 @@ export function ChatProvider({ children }: { children: React.ReactNode }) {
 
     try {
       const history = updatedMessages.slice(-12).map((m) => ({
-        role: m.role,
+        role: m.role as "user" | "assistant",
         content: m.content,
       }));
 
-      const response = await fetch(`${API_URL}/api/dobbi/chat`, {
+      const response = await fetch(GROQ_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: history }),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${GROQ_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: [
+            { role: "system", content: SYSTEM_PROMPT },
+            ...history,
+          ],
+          max_tokens: 200,
+          temperature: 0.8,
+        }),
         signal: abortRef.current.signal,
       });
 
       let replyContent: string;
 
       if (!response.ok) {
+        const errBody = await response.json().catch(() => ({})) as { error?: { message?: string } };
+        console.log("[dobbi error]", response.status, errBody?.error?.message);
         replyContent = FALLBACK_REPLIES[Math.floor(Math.random() * FALLBACK_REPLIES.length)];
       } else {
-        const data = (await response.json()) as { reply?: string; error?: string };
-        replyContent = data.reply || data.error || FALLBACK_REPLIES[0];
+        const data = (await response.json()) as { choices?: { message: { content: string } }[] };
+        replyContent = data.choices?.[0]?.message?.content ?? FALLBACK_REPLIES[0];
       }
 
       const assistantMsg: ChatMessage = {
