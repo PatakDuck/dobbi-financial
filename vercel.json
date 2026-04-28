@@ -1,3 +1,9 @@
 {
-  "framework": null
+  "buildCommand": "cd artifacts/dorm-dollar && npx expo export --platform web",
+  "outputDirectory": "artifacts/dorm-dollar/dist",
+  "installCommand": "pnpm install --filter dorm-dollar...",
+  "framework": null,
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
 }
