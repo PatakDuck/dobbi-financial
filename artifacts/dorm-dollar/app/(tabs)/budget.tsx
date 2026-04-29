@@ -13,11 +13,11 @@ import Svg, { Rect, Text as SvgText, G, Path, Circle } from "react-native-svg";
 import { useAuth } from "@/context/AuthContext";
 import { useTransactions } from "@/hooks/useTransactions";
 import { useColors } from "@/hooks/useColors";
+import { displayFont } from "@/constants/fonts";
 
 const { width: SCREEN_W } = Dimensions.get("window");
-const CHART_W = SCREEN_W - 48;
-
-// ── Static sample data ────────────────────────────────────────────────────────
+// scroll paddingHorizontal:22 + card padding:16 = 38 per side = 76 total
+const CHART_W = SCREEN_W - 76;
 
 const WEEKLY_SPEND = [
   { day: "M", amount: 24 },
@@ -39,11 +39,11 @@ const MONTHLY_TREND = [
 ];
 
 const CATEGORIES = [
-  { id: "food",      label: "Food & Drinks",  icon: "coffee",       amount: 247, budget: 300, color: "#6355E8" },
-  { id: "transport", label: "Transport",       icon: "navigation",   amount: 63,  budget: 80,  color: "#00B894" },
-  { id: "shopping",  label: "Shopping",        icon: "shopping-bag", amount: 135, budget: 100, color: "#F59E0B" },
-  { id: "subs",      label: "Subscriptions",   icon: "repeat",       amount: 29,  budget: 40,  color: "#06B6D4" },
-  { id: "education", label: "Education",       icon: "book",         amount: 60,  budget: 100, color: "#8B5CF6" },
+  { id: "food",      label: "Food & Drinks",  icon: "coffee",       amount: 247, budget: 300, color: "#E8704A" },
+  { id: "transport", label: "Transport",       icon: "navigation",   amount: 63,  budget: 80,  color: "#5C8A6E" },
+  { id: "shopping",  label: "Shopping",        icon: "shopping-bag", amount: 135, budget: 100, color: "#C9A961" },
+  { id: "subs",      label: "Subscriptions",   icon: "repeat",       amount: 29,  budget: 40,  color: "#2A3FAE" },
+  { id: "education", label: "Education",       icon: "book",         amount: 60,  budget: 100, color: "#7C6FF7" },
 ];
 
 interface Transaction {
@@ -59,53 +59,45 @@ interface Transaction {
 }
 
 const TRANSACTIONS: Transaction[] = [
-  { id: "t1", name: "Chipotle",       amount: 14.50, category: "food",      icon: "coffee",        dateGroup: "Today",        time: "2:34 PM",   isExpense: true },
-  { id: "t2", name: "Uber",           amount: 8.00,  category: "transport", icon: "navigation",    dateGroup: "Today",        time: "11:20 AM",  isExpense: true },
-  { id: "t3", name: "Target",         amount: 45.20, category: "shopping",  icon: "shopping-bag",  dateGroup: "Yesterday",    time: "3:15 PM",   isExpense: true },
-  { id: "t4", name: "Starbucks",      amount: 6.50,  category: "food",      icon: "coffee",        dateGroup: "Yesterday",    time: "9:00 AM",   isExpense: true },
-  { id: "t5", name: "Dining Hall",    amount: 12.00, category: "food",      icon: "coffee",        dateGroup: "Mon Apr 18",   time: "12:30 PM",  isExpense: true },
-  { id: "t6", name: "Spotify",        amount: 5.99,  category: "subs",      icon: "music",         dateGroup: "Mon Apr 18",   time: "Auto-pay",  isExpense: true },
-  { id: "t7", name: "Textbook rental",amount: 35.00, category: "education", icon: "book",          dateGroup: "Sat Apr 16",   time: "1:00 PM",   isExpense: true },
-  { id: "t8", name: "Instacart",      amount: 67.50, category: "food",      icon: "shopping-cart", dateGroup: "Fri Apr 15",   time: "4:20 PM",   isExpense: true },
+  { id: "t1", name: "Chipotle",        amount: 14.50, category: "food",      icon: "coffee",        dateGroup: "Today",      time: "2:34 PM",   isExpense: true },
+  { id: "t2", name: "Uber",            amount: 8.00,  category: "transport", icon: "navigation",    dateGroup: "Today",      time: "11:20 AM",  isExpense: true },
+  { id: "t3", name: "Target",          amount: 45.20, category: "shopping",  icon: "shopping-bag",  dateGroup: "Yesterday",  time: "3:15 PM",   isExpense: true },
+  { id: "t4", name: "Starbucks",       amount: 6.50,  category: "food",      icon: "coffee",        dateGroup: "Yesterday",  time: "9:00 AM",   isExpense: true },
+  { id: "t5", name: "Dining Hall",     amount: 12.00, category: "food",      icon: "coffee",        dateGroup: "Mon Apr 18", time: "12:30 PM",  isExpense: true },
+  { id: "t6", name: "Spotify",         amount: 5.99,  category: "subs",      icon: "music",         dateGroup: "Mon Apr 18", time: "Auto-pay",  isExpense: true },
+  { id: "t7", name: "Textbook rental", amount: 35.00, category: "education", icon: "book",          dateGroup: "Sat Apr 16", time: "1:00 PM",   isExpense: true },
+  { id: "t8", name: "Instacart",       amount: 67.50, category: "food",      icon: "shopping-cart", dateGroup: "Fri Apr 15", time: "4:20 PM",   isExpense: true },
 ];
 
 const CAT_COLORS: Record<string, string> = {
-  food: "#6355E8", transport: "#00B894", shopping: "#F59E0B",
-  subs: "#06B6D4", education: "#8B5CF6",
+  food: "#E8704A", transport: "#5C8A6E", shopping: "#C9A961",
+  subs: "#2A3FAE", education: "#7C6FF7",
 };
 
 const CAT_TIPS: Record<string, string> = {
-  food:      "lowkey your food spend is a vibe but also 👀",
-  shopping:  "this one hurts a little ngl",
-  transport: "ride share habit going crazy fr",
-  subs:      "how many streaming services does one person need 💀",
-  education: "necessary pain bestie, we respect it",
+  food:      "Food is your largest expense — small daily choices add up quickly.",
+  shopping:  "Shopping is over budget this month.",
+  transport: "Transport costs are higher than usual.",
+  subs:      "Review your subscriptions for any you no longer use.",
+  education: "Education expenses are a worthwhile investment.",
 };
 
-const FUN_STATS = [
-  { category: "food",      pct: 71, label: "food & drinks", emoji: "🍕" },
-  { category: "shopping",  pct: 84, label: "shopping",      emoji: "🛍️" },
-  { category: "transport", pct: 58, label: "transport",     emoji: "🚌" },
-];
-
 const SAVINGS_GOALS = [
-  { id: "g1", name: "Thailand Trip ✈️",   saved: 340, target: 1200, monthly: 100, color: "#6355E8", emoji: "✈️" },
-  { id: "g2", name: "New MacBook 💻",     saved: 680, target: 1500, monthly: 150, color: "#00B894", emoji: "💻" },
-  { id: "g3", name: "Emergency Fund 🛡️", saved: 200, target: 500,  monthly: 50,  color: "#F59E0B", emoji: "🛡️" },
+  { id: "g1", name: "Thailand Trip",   saved: 340, target: 1200, monthly: 100, color: "#E8704A" },
+  { id: "g2", name: "New MacBook",     saved: 680, target: 1500, monthly: 150, color: "#5C8A6E" },
+  { id: "g3", name: "Emergency Fund",  saved: 200, target: 500,  monthly: 50,  color: "#C9A961" },
 ];
 
 const ICON_OPTIONS = ["coffee", "shopping-bag", "music", "book", "heart", "home", "monitor", "gift", "truck", "scissors"];
-const COLOR_OPTIONS = ["#6355E8", "#00B894", "#F59E0B", "#EF4444", "#06B6D4", "#8B5CF6", "#EC4899", "#10B981"];
+const COLOR_OPTIONS = ["#E8704A", "#5C8A6E", "#C9A961", "#EF4444", "#2A3FAE", "#7C6FF7", "#EC4899", "#0EA5A0"];
 
-// ── Bar Chart (weekly) ────────────────────────────────────────────────────────
-
-function WeeklyBarChart({ data }: { data: typeof WEEKLY_SPEND }) {
+function WeeklyBarChart({ data, primaryColor, barColor }: { data: typeof WEEKLY_SPEND; primaryColor: string; barColor: string }) {
   const maxAmt = Math.max(...data.map((d) => d.amount), 1);
-  const chartH = 100;
-  const labelH = 24;
-  const maxBarH = 64;
-  const totalH = chartH + labelH;
-  const barPad = 6;
+  const valueH = 18;
+  const maxBarH = 72;
+  const dayH = 20;
+  const totalH = valueH + maxBarH + dayH;
+  const barPad = 5;
   const barW = (CHART_W - barPad * (data.length + 1)) / data.length;
 
   return (
@@ -113,19 +105,20 @@ function WeeklyBarChart({ data }: { data: typeof WEEKLY_SPEND }) {
       {data.map((d, i) => {
         const barH = Math.max((d.amount / maxAmt) * maxBarH, 4);
         const x = barPad + i * (barW + barPad);
-        const y = chartH - barH;
+        const barY = valueH + (maxBarH - barH);
         return (
           <G key={i}>
-            <Rect x={x} y={y} width={barW} height={barH} rx={6} ry={6}
-              fill={d.today ? "#6355E8" : "#E4E7F0"} />
-            {d.amount > 0 && (
-              <SvgText x={x + barW / 2} y={y - 5} textAnchor="middle" fontSize={9}
-                fill={d.today ? "#6355E8" : "#9CA3AF"} fontWeight={d.today ? "bold" : "normal"}>
+            {/* Only show dollar label for today */}
+            {d.today && (
+              <SvgText x={x + barW / 2} y={valueH - 3} textAnchor="middle" fontSize={10}
+                fill={primaryColor} fontWeight="bold">
                 ${d.amount}
               </SvgText>
             )}
-            <SvgText x={x + barW / 2} y={totalH - 5} textAnchor="middle" fontSize={11}
-              fill={d.today ? "#6355E8" : "#9CA3AF"} fontWeight={d.today ? "bold" : "normal"}>
+            <Rect x={x} y={barY} width={barW} height={barH} rx={4} ry={4}
+              fill={d.today ? primaryColor : barColor} />
+            <SvgText x={x + barW / 2} y={totalH - 3} textAnchor="middle" fontSize={11}
+              fill={d.today ? primaryColor : "#9CA3AF"} fontWeight={d.today ? "bold" : "normal"}>
               {d.day}
             </SvgText>
           </G>
@@ -135,9 +128,7 @@ function WeeklyBarChart({ data }: { data: typeof WEEKLY_SPEND }) {
   );
 }
 
-// ── Line Chart (monthly trend) ────────────────────────────────────────────────
-
-function MonthlyTrendChart({ data }: { data: typeof MONTHLY_TREND }) {
+function MonthlyTrendChart({ data, primaryColor }: { data: typeof MONTHLY_TREND; primaryColor: string }) {
   const maxAmt = Math.max(...data.map((d) => d.amount), 1);
   const chartH = 80;
   const labelH = 20;
@@ -153,18 +144,19 @@ function MonthlyTrendChart({ data }: { data: typeof MONTHLY_TREND }) {
 
   const linePath = pts.map((p, i) => `${i === 0 ? "M" : "L"}${p.x},${p.y}`).join(" ");
   const areaPath = `${linePath} L${pts[pts.length - 1].x},${chartH} L${pts[0].x},${chartH} Z`;
+  const areaColor = primaryColor + "14";
 
   return (
     <Svg width={CHART_W} height={totalH}>
-      <Path d={areaPath} fill="rgba(99,85,232,0.08)" />
-      <Path d={linePath} stroke="#6355E8" strokeWidth={2.5} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      <Path d={areaPath} fill={areaColor} />
+      <Path d={linePath} stroke={primaryColor} strokeWidth={2.5} fill="none" strokeLinecap="round" strokeLinejoin="round" />
       {pts.map((p, i) => (
         <G key={i}>
           <Circle cx={p.x} cy={p.y} r={i === pts.length - 1 ? 5 : 3.5}
-            fill={i === pts.length - 1 ? "#6355E8" : "#fff"}
-            stroke="#6355E8" strokeWidth={2} />
+            fill={i === pts.length - 1 ? primaryColor : "#fff"}
+            stroke={primaryColor} strokeWidth={2} />
           <SvgText x={p.x} y={totalH - 2} textAnchor="middle" fontSize={10}
-            fill={i === pts.length - 1 ? "#6355E8" : "#9CA3AF"}
+            fill={i === pts.length - 1 ? primaryColor : "#9CA3AF"}
             fontWeight={i === pts.length - 1 ? "bold" : "normal"}>
             {data[i].month}
           </SvgText>
@@ -173,8 +165,6 @@ function MonthlyTrendChart({ data }: { data: typeof MONTHLY_TREND }) {
     </Svg>
   );
 }
-
-// ── Scanned item type ─────────────────────────────────────────────────────────
 
 interface ScannedItem {
   id: string;
@@ -192,8 +182,6 @@ interface CustomCategory {
   amount: number;
 }
 
-// ── Main screen ───────────────────────────────────────────────────────────────
-
 export default function BudgetScreen() {
   const insets = useSafeAreaInsets();
   const { user } = useAuth();
@@ -207,24 +195,24 @@ export default function BudgetScreen() {
   const baseCategories = dbCategories.length > 0 ? dbCategories : CATEGORIES;
   const CATEGORIES_DISPLAY = [...baseCategories, ...customCategories];
 
-  // Receipt scan state
   const [scanModal, setScanModal] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [scannedItems, setScannedItems] = useState<ScannedItem[]>([]);
   const [scanDone, setScanDone] = useState(false);
   const [scannedMerchant, setScannedMerchant] = useState("");
 
-  // New category modal state
   const [catModal, setCatModal] = useState(false);
   const [newCatName, setNewCatName] = useState("");
   const [newCatIcon, setNewCatIcon] = useState("coffee");
-  const [newCatColor, setNewCatColor] = useState("#6355E8");
+  const [newCatColor, setNewCatColor] = useState("#E8704A");
   const [newCatBudget, setNewCatBudget] = useState("");
 
   const totalSpent = CATEGORIES_DISPLAY.reduce((s, c) => s + c.amount, 0);
   const baseBudget = baseCategories.reduce((s, c) => s + c.budget, 0);
   const totalBudget = CATEGORIES_DISPLAY.reduce((s, c) => s + c.budget, 0);
   const weeklyTotal = WEEKLY_SPEND.reduce((s, d) => s + d.amount, 0);
+  const budgetPct = Math.min(Math.round((totalSpent / totalBudget) * 100), 100);
+  const budgetLeft = baseBudget - totalSpent;
 
   const grouped = transactions.reduce<Record<string, Transaction[]>>((acc, t) => {
     if (!acc[t.dateGroup]) acc[t.dateGroup] = [];
@@ -237,8 +225,6 @@ export default function BudgetScreen() {
     acc[t.dateGroup].push(t);
     return acc;
   }, {});
-
-  // ── Handlers ──────────────────────────────────────────────────────────────
 
   const handleScanReceipt = async () => {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
@@ -272,7 +258,7 @@ export default function BudgetScreen() {
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     } catch {
       setScanModal(false);
-      Alert.alert("Scan failed", "Couldn't read the receipt 😭 Try again with better lighting.");
+      Alert.alert("Scan failed", "Couldn't read the receipt. Try again with better lighting.");
     } finally {
       setScanning(false);
     }
@@ -309,7 +295,7 @@ export default function BudgetScreen() {
       amount: 0,
     };
     setCustomCategories((prev) => [...prev, newCat]);
-    setNewCatName(""); setNewCatIcon("coffee"); setNewCatColor("#6355E8"); setNewCatBudget("");
+    setNewCatName(""); setNewCatIcon("coffee"); setNewCatColor("#E8704A"); setNewCatBudget("");
     setCatModal(false);
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
   };
@@ -317,142 +303,123 @@ export default function BudgetScreen() {
   const scannedTotal = scannedItems.filter((i) => i.selected).reduce((s, i) => s + i.amount, 0);
 
   return (
-    <LinearGradient colors={tc.backgroundGradient as [string, string, ...string[]]} style={styles.root}>
-      {/* ── Header ── */}
-      <LinearGradient colors={["#2D1B69", "#3D2A8A"]} style={[styles.header, { paddingTop: topPad + 16 }]}>
+    <View style={[styles.root, { backgroundColor: tc.background }]}>
+      {/* Header */}
+      <View style={[styles.header, { paddingTop: topPad + 16, backgroundColor: tc.background, borderBottomColor: tc.border }]}>
         <View style={styles.headerRow}>
           <View>
-            <Text style={styles.headerTitle}>Budget</Text>
-            <Text style={styles.headerSub}>where your $ went this month 💸</Text>
+            <Text style={[styles.eyebrow, { color: tc.primary }]}>April 2026</Text>
+            <Text style={[styles.headerTitle, { color: tc.foreground }]}>Your spending</Text>
           </View>
-          <View style={styles.monthPill}><Text style={styles.monthText}>Apr 2026</Text></View>
-        </View>
-
-        <View style={styles.totalsRow}>
-          <View style={styles.totalItem}>
-            <Text style={styles.totalAmt}>${totalSpent}</Text>
-            <Text style={styles.totalLbl}>spent</Text>
-          </View>
-          <View style={styles.totalDivider} />
-          <View style={styles.totalItem}>
-            <Text style={[styles.totalAmt, { color: "#A7F3D0" }]}>${baseBudget - totalSpent}</Text>
-            <Text style={styles.totalLbl}>left</Text>
-          </View>
-          <View style={styles.totalDivider} />
-          <View style={styles.totalItem}>
-            <Text style={styles.totalAmt}>${weeklyTotal}</Text>
-            <Text style={styles.totalLbl}>this week</Text>
+          <View style={[styles.monthPill, { backgroundColor: tc.muted, borderColor: tc.border }]}>
+            <Feather name="calendar" size={12} color={tc.mutedForeground} />
+            <Text style={[styles.monthText, { color: tc.foreground }]}>Apr</Text>
           </View>
         </View>
+      </View>
 
-        <View style={styles.budgetBarWrap}>
-          <View style={styles.budgetBarTrack}>
-            <View style={[styles.budgetBarFill, {
-              width: `${Math.min((totalSpent / totalBudget) * 100, 100)}%` as any,
-              backgroundColor: totalSpent > totalBudget ? "#EF4444" : "#00C896",
-            }]} />
-          </View>
-          <Text style={styles.budgetBarLabel}>
-            {Math.round((totalSpent / totalBudget) * 100)}% of ${totalBudget} budget used
-          </Text>
-        </View>
-      </LinearGradient>
-
-      <ScrollView contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad + 100 }]} showsVerticalScrollIndicator={false}>
-
-        {/* ── Fun stat card ── */}
-        <View style={styles.funStatCard}>
-          <LinearGradient colors={["#6355E8", "#8B5CF6"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.funStatGrad}>
-            <Text style={styles.funStatTitle}>📊 how you compare</Text>
-            <View style={styles.funStatRow}>
-              {FUN_STATS.map((s) => (
-                <View key={s.category} style={styles.funStatItem}>
-                  <Text style={styles.funStatEmoji}>{s.emoji}</Text>
-                  <Text style={styles.funStatPct}>{s.pct}%</Text>
-                  <Text style={styles.funStatLabel}>spend less on{"\n"}{s.label}</Text>
-                </View>
-              ))}
+      <ScrollView
+        contentContainerStyle={[styles.scroll, { paddingBottom: bottomPad + 100 }]}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Hero summary card */}
+        <View style={styles.heroWrap}>
+          <View style={[styles.heroCard, { backgroundColor: "#0E1A2B" }]}>
+            <View style={styles.heroTop}>
+              <View>
+                <Text style={styles.heroLabel}>spent this month</Text>
+                <Text style={styles.heroAmount}>${totalSpent}</Text>
+              </View>
+              <View style={{ alignItems: "flex-end" }}>
+                <Text style={styles.heroLabel}>left</Text>
+                <Text style={[styles.heroSubAmount, { color: budgetLeft >= 0 ? "#C8DBC8" : "#F87171" }]}>
+                  ${Math.abs(budgetLeft)}
+                </Text>
+              </View>
             </View>
-            <Text style={styles.funStatSub}>vs. other college students your age 🎓</Text>
-          </LinearGradient>
-        </View>
-
-        {/* ── Weekly chart ── */}
-        <View style={styles.section}>
-          <View style={styles.sectionRow}>
-            <Text style={[styles.sectionTitle, { color: tc.foreground }]}>this week</Text>
-            <Text style={[styles.sectionSub, { color: tc.mutedForeground }]}>${weeklyTotal} total</Text>
-          </View>
-          <View style={[styles.card, { backgroundColor: tc.card, borderColor: tc.border }]}>
-            <WeeklyBarChart data={WEEKLY_SPEND} />
-            <View style={styles.chartLegend}>
-              <View style={styles.legendDot} />
-              <Text style={[styles.legendText, { color: tc.mutedForeground }]}>today highlighted</Text>
+            <View style={styles.heroBudgetBar}>
+              <View style={[styles.heroBudgetFill, { width: `${budgetPct}%` as any }]} />
+            </View>
+            <View style={styles.heroBudgetMeta}>
+              <Text style={styles.heroBudgetLabel}>{budgetPct}% of ${totalBudget} budget</Text>
+              <Text style={styles.heroBudgetLabel}>4 days left</Text>
             </View>
           </View>
         </View>
 
-        {/* ── Monthly trend ── */}
+        {/* This week */}
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: tc.foreground }]}>This week</Text>
+          <Text style={[styles.sectionSub, { color: tc.mutedForeground }]}>${weeklyTotal} spent</Text>
+        </View>
         <View style={styles.section}>
-          <View style={styles.sectionRow}>
-            <Text style={[styles.sectionTitle, { color: tc.foreground }]}>6-month trend</Text>
-            <Text style={[styles.sectionSub, { color: tc.mutedForeground }]}>Nov → Apr</Text>
-          </View>
           <View style={[styles.card, { backgroundColor: tc.card, borderColor: tc.border }]}>
-            <MonthlyTrendChart data={MONTHLY_TREND} />
+            <WeeklyBarChart
+              data={WEEKLY_SPEND}
+              primaryColor={tc.primary}
+              barColor={tc.isDark ? "rgba(255,255,255,0.1)" : "#E6DFD2"}
+            />
+          </View>
+        </View>
+
+        {/* 6-month trend */}
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: tc.foreground }]}>6-month trend</Text>
+          <Text style={[styles.sectionSub, { color: tc.mutedForeground }]}>Nov → Apr</Text>
+        </View>
+        <View style={styles.section}>
+          <View style={[styles.card, { backgroundColor: tc.card, borderColor: tc.border }]}>
+            <MonthlyTrendChart data={MONTHLY_TREND} primaryColor={tc.primary} />
             <Text style={[styles.trendNote, { color: tc.mutedForeground }]}>
-              Apr is your highest month — time to rein it in? 👀
+              April is your highest month — consider reducing discretionary spending.
             </Text>
           </View>
         </View>
 
-        {/* ── Savings goals ── */}
+        {/* Saving for */}
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: tc.foreground }]}>Saving for</Text>
+          <Text style={[styles.sectionSub, { color: tc.mutedForeground }]}>{SAVINGS_GOALS.length} goals</Text>
+        </View>
         <View style={styles.section}>
-          <View style={styles.sectionRow}>
-            <Text style={[styles.sectionTitle, { color: tc.foreground }]}>saving for</Text>
-            <Text style={[styles.sectionSub, { color: tc.mutedForeground }]}>{SAVINGS_GOALS.length} goals</Text>
-          </View>
           {SAVINGS_GOALS.map((g) => {
             const pct = Math.min(Math.round((g.saved / g.target) * 100), 100);
             const monthsLeft = Math.ceil((g.target - g.saved) / g.monthly);
             return (
               <View key={g.id} style={[styles.goalCard, { backgroundColor: tc.card, borderColor: tc.border }]}>
-                <View style={styles.goalCardRow}>
-                  <View style={[styles.goalIconCircle, { backgroundColor: g.color + "18" }]}>
-                    <Text style={styles.goalIconText}>{g.emoji}</Text>
-                  </View>
-                  <View style={styles.goalCardInfo}>
-                    <Text style={[styles.goalCardName, { color: tc.foreground }]}>{g.name}</Text>
-                    <Text style={[styles.goalCardSub, { color: tc.mutedForeground }]}>
+                <View style={styles.goalRow}>
+                  <View style={styles.goalInfo}>
+                    <Text style={[styles.goalName, { color: tc.foreground }]}>{g.name}</Text>
+                    <Text style={[styles.goalSub, { color: tc.mutedForeground }]}>
                       ${g.monthly}/mo · ~{monthsLeft} month{monthsLeft !== 1 ? "s" : ""} to go
                     </Text>
                   </View>
-                  <View>
-                    <Text style={[styles.goalCardPct, { color: g.color }]}>{pct}%</Text>
-                    <Text style={[styles.goalCardAmt, { color: tc.mutedForeground }]}>${g.saved}/${g.target}</Text>
+                  <View style={{ alignItems: "flex-end" }}>
+                    <Text style={[styles.goalPct, { color: g.color }]}>{pct}%</Text>
+                    <Text style={[styles.goalAmt, { color: tc.mutedForeground }]}>${g.saved}/${g.target}</Text>
                   </View>
                 </View>
-                <View style={[styles.goalBarTrack, { backgroundColor: tc.muted }]}>
-                  <View style={[styles.goalBarFill, { width: `${pct}%` as any, backgroundColor: g.color }]} />
+                <View style={[styles.barTrack, { backgroundColor: tc.muted }]}>
+                  <View style={[styles.barFill, { width: `${pct}%` as any, backgroundColor: g.color }]} />
                 </View>
               </View>
             );
           })}
         </View>
 
-        {/* ── Category breakdown ── */}
+        {/* By category */}
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: tc.foreground }]}>By category</Text>
+          <TouchableOpacity
+            style={[styles.addCatBtn, { backgroundColor: tc.secondary, borderColor: tc.border }]}
+            onPress={() => setCatModal(true)}
+            activeOpacity={0.7}
+          >
+            <Feather name="plus" size={13} color={tc.primary} />
+            <Text style={[styles.addCatText, { color: tc.primary }]}>Add</Text>
+          </TouchableOpacity>
+        </View>
         <View style={styles.section}>
-          <View style={styles.sectionRow}>
-            <Text style={[styles.sectionTitle, { color: tc.foreground }]}>by category</Text>
-            <TouchableOpacity
-              style={[styles.addCatBtn, { backgroundColor: tc.secondary, borderColor: tc.border }]}
-              onPress={() => setCatModal(true)}
-              activeOpacity={0.7}
-            >
-              <Feather name="plus" size={13} color={tc.primary} />
-              <Text style={[styles.addCatText, { color: tc.primary }]}>add category</Text>
-            </TouchableOpacity>
-          </View>
           {CATEGORIES_DISPLAY.map((cat) => {
             const pct = Math.min((cat.amount / cat.budget) * 100, 100);
             const over = cat.amount > cat.budget;
@@ -467,22 +434,22 @@ export default function BudgetScreen() {
                       <Text style={[styles.catLabel, { color: tc.foreground }]}>{cat.label}</Text>
                       {over && (
                         <View style={styles.overBadge}>
-                          <Text style={styles.overBadgeText}>over budget</Text>
+                          <Text style={styles.overBadgeText}>over</Text>
                         </View>
                       )}
                     </View>
                     <View style={[styles.catBarTrack, { backgroundColor: tc.muted }]}>
-                      <View style={[styles.catBarFill, { width: `${pct}%` as any, backgroundColor: over ? "#EF4444" : cat.color }]} />
+                      <View style={[styles.catBarFill, { width: `${pct}%` as any, backgroundColor: over ? "#E8553E" : cat.color }]} />
                     </View>
                   </View>
                   <View style={styles.catAmounts}>
-                    <Text style={[styles.catSpent, { color: tc.foreground }, over && { color: "#EF4444" }]}>${cat.amount}</Text>
+                    <Text style={[styles.catSpent, { color: over ? "#E8553E" : tc.foreground }]}>${cat.amount}</Text>
                     <Text style={[styles.catBudget, { color: tc.mutedForeground }]}>/${cat.budget}</Text>
                   </View>
                 </View>
                 {(over || pct > 70) && (
                   <Text style={[styles.catTip, { color: tc.mutedForeground }]}>
-                    {over ? "💀 " : "👀 "}{CAT_TIPS[cat.id] ?? "worth keeping an eye on"}
+                    {CAT_TIPS[cat.id] ?? "Worth keeping an eye on."}
                   </Text>
                 )}
               </View>
@@ -490,22 +457,20 @@ export default function BudgetScreen() {
           })}
         </View>
 
-        {/* ── Transactions ── */}
+        {/* Transactions */}
+        <View style={styles.sectionHeader}>
+          <Text style={[styles.sectionTitle, { color: tc.foreground }]}>Recent activity</Text>
+          <Text style={[styles.sectionSub, { color: tc.mutedForeground }]}>{Object.values(txList).flat().length} entries</Text>
+        </View>
         <View style={styles.section}>
-          <View style={styles.sectionRow}>
-            <Text style={[styles.sectionTitle, { color: tc.foreground }]}>every transaction</Text>
-            <Text style={[styles.sectionSub, { color: tc.mutedForeground }]}>{Object.values(txList).flat().length} entries</Text>
-          </View>
           {Object.keys(txList).length === 0 && (
             <View style={[styles.emptyState, { backgroundColor: tc.card, borderColor: tc.border }]}>
-              <Text style={styles.emptyEmoji}>📭</Text>
-              <Text style={[styles.emptyTitle, { color: tc.foreground }]}>no transactions yet</Text>
-              <Text style={[styles.emptySub, { color: tc.mutedForeground }]}>scan your first receipt to start tracking your spending</Text>
-              <TouchableOpacity style={styles.emptyBtn} onPress={handleScanReceipt} activeOpacity={0.85}>
-                <LinearGradient colors={["#6355E8", "#8B5CF6"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.emptyBtnGrad}>
-                  <Feather name="camera" size={15} color="#fff" />
-                  <Text style={styles.emptyBtnText}>Scan a Receipt</Text>
-                </LinearGradient>
+              <Feather name="inbox" size={28} color={tc.mutedForeground} />
+              <Text style={[styles.emptyTitle, { color: tc.foreground }]}>No transactions yet</Text>
+              <Text style={[styles.emptySub, { color: tc.mutedForeground }]}>Scan your first receipt to start tracking spending.</Text>
+              <TouchableOpacity style={[styles.emptyBtn, { backgroundColor: tc.foreground }]} onPress={handleScanReceipt} activeOpacity={0.85}>
+                <Feather name="camera" size={15} color={tc.onForeground} />
+                <Text style={[styles.emptyBtnText, { color: tc.onForeground }]}>Scan a Receipt</Text>
               </TouchableOpacity>
             </View>
           )}
@@ -516,8 +481,8 @@ export default function BudgetScreen() {
                 {(txs as Transaction[]).map((tx, idx) => (
                   <View key={tx.id}>
                     <View style={styles.txRow}>
-                      <View style={[styles.txIcon, { backgroundColor: (CAT_COLORS[tx.category] ?? "#6355E8") + "15" }]}>
-                        <Feather name={tx.icon as any} size={16} color={CAT_COLORS[tx.category] ?? "#6355E8"} />
+                      <View style={[styles.txIcon, { backgroundColor: tc.muted, borderColor: tc.border, borderWidth: 1 }]}>
+                        <Feather name={tx.icon as any} size={15} color={CAT_COLORS[tx.category] ?? tc.primary} />
                       </View>
                       <View style={styles.txInfo}>
                         <View style={styles.txNameRow}>
@@ -531,8 +496,8 @@ export default function BudgetScreen() {
                         </View>
                         <Text style={[styles.txTime, { color: tc.mutedForeground }]}>{tx.time}</Text>
                       </View>
-                      <Text style={styles.txAmount}>
-                        {tx.isExpense ? "-" : "+"}${tx.amount.toFixed(2)}
+                      <Text style={[styles.txAmount, { color: tc.foreground }]}>
+                        {tx.isExpense ? "−" : "+"}${tx.amount.toFixed(2)}
                       </Text>
                     </View>
                     {idx < (txs as Transaction[]).length - 1 && <View style={[styles.txDivider, { backgroundColor: tc.border }]} />}
@@ -544,31 +509,33 @@ export default function BudgetScreen() {
         </View>
       </ScrollView>
 
-      {/* ── Scan FAB ── */}
-      <TouchableOpacity style={[styles.fab, { bottom: bottomPad + 82 }]} onPress={handleScanReceipt} activeOpacity={0.85}>
-        <LinearGradient colors={["#6355E8", "#8B5CF6"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.fabGrad}>
-          <Feather name="camera" size={20} color="#fff" />
-          <Text style={styles.fabText}>Scan Receipt</Text>
-        </LinearGradient>
+      {/* Scan FAB */}
+      <TouchableOpacity
+        style={[styles.fab, { bottom: bottomPad + 82, backgroundColor: tc.foreground }]}
+        onPress={handleScanReceipt}
+        activeOpacity={0.85}
+      >
+        <Feather name="camera" size={18} color={tc.onForeground} />
+        <Text style={[styles.fabText, { color: tc.onForeground }]}>Scan a receipt</Text>
       </TouchableOpacity>
 
-      {/* ── Scan modal ── */}
+      {/* Scan modal */}
       <Modal visible={scanModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalSheet, { backgroundColor: tc.isDark ? "#1A1640" : "#fff" }]}>
+          <View style={[styles.modalSheet, { backgroundColor: tc.isDark ? "#141428" : tc.card }]}>
             <View style={[styles.modalHandle, { backgroundColor: tc.border }]} />
             {scanning ? (
               <View style={styles.scanningState}>
                 <ActivityIndicator size="large" color={tc.primary} />
-                <Text style={[styles.scanningTitle, { color: tc.foreground }]}>analyzing receipt... 🔍</Text>
-                <Text style={[styles.scanningSub, { color: tc.mutedForeground }]}>dobbi's reading your bill ngl</Text>
+                <Text style={[styles.scanningTitle, { color: tc.foreground }]}>Analyzing receipt...</Text>
+                <Text style={[styles.scanningSub, { color: tc.mutedForeground }]}>Reading your receipt</Text>
               </View>
             ) : (
               <>
                 <View style={styles.modalHeader}>
                   <View>
                     <Text style={[styles.modalTitle, { color: tc.foreground }]}>{scannedMerchant}</Text>
-                    <Text style={[styles.modalSub, { color: tc.mutedForeground }]}>select what to add to your budget</Text>
+                    <Text style={[styles.modalSub, { color: tc.mutedForeground }]}>Select items to add to your budget</Text>
                   </View>
                   <TouchableOpacity onPress={() => setScanModal(false)} style={[styles.closeBtn, { backgroundColor: tc.muted }]}>
                     <Feather name="x" size={20} color={tc.mutedForeground} />
@@ -582,8 +549,8 @@ export default function BudgetScreen() {
                       onPress={() => handleToggleItem(item.id)}
                       activeOpacity={0.75}
                     >
-                      <View style={[styles.itemCheck, { borderColor: tc.border }, item.selected && { backgroundColor: tc.primary, borderColor: tc.primary }]}>
-                        {item.selected && <Feather name="check" size={12} color="#fff" />}
+                      <View style={[styles.itemCheck, { borderColor: tc.border }, item.selected && { backgroundColor: tc.foreground, borderColor: tc.foreground }]}>
+                        {item.selected && <Feather name="check" size={12} color={tc.onForeground} />}
                       </View>
                       <Text style={[styles.itemName, { color: tc.foreground }, !item.selected && styles.itemDim]}>{item.name}</Text>
                       <Text style={[styles.itemAmt, { color: tc.foreground }, !item.selected && styles.itemDim]}>${item.amount.toFixed(2)}</Text>
@@ -592,14 +559,16 @@ export default function BudgetScreen() {
                 </ScrollView>
                 <View style={styles.modalFooter}>
                   <View style={styles.totalRowModal}>
-                    <Text style={[styles.totalLabelModal, { color: tc.mutedForeground }]}>total to add</Text>
+                    <Text style={[styles.totalLabelModal, { color: tc.mutedForeground }]}>Total to add</Text>
                     <Text style={[styles.totalAmtModal, { color: tc.foreground }]}>${scannedTotal.toFixed(2)}</Text>
                   </View>
-                  <TouchableOpacity style={styles.addBtn} onPress={handleAddTobudget} activeOpacity={0.85}>
-                    <LinearGradient colors={["#6355E8", "#8B5CF6"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.addBtnGrad}>
-                      <Feather name="plus-circle" size={17} color="#fff" />
-                      <Text style={styles.addBtnText}>Add to Budget</Text>
-                    </LinearGradient>
+                  <TouchableOpacity
+                    style={[styles.addBtn, { backgroundColor: tc.foreground }]}
+                    onPress={handleAddTobudget}
+                    activeOpacity={0.85}
+                  >
+                    <Feather name="plus-circle" size={17} color={tc.onForeground} />
+                    <Text style={[styles.addBtnText, { color: tc.onForeground }]}>Add to Budget</Text>
                   </TouchableOpacity>
                 </View>
               </>
@@ -608,20 +577,19 @@ export default function BudgetScreen() {
         </View>
       </Modal>
 
-      {/* ── New category modal ── */}
+      {/* New category modal */}
       <Modal visible={catModal} transparent animationType="slide">
         <View style={styles.modalOverlay}>
-          <View style={[styles.modalSheet, { backgroundColor: tc.isDark ? "#1A1640" : "#fff", maxHeight: "85%" }]}>
+          <View style={[styles.modalSheet, { backgroundColor: tc.isDark ? "#141428" : tc.card, maxHeight: "85%" }]}>
             <View style={[styles.modalHandle, { backgroundColor: tc.border }]} />
             <View style={styles.modalHeader}>
-              <Text style={[styles.modalTitle, { color: tc.foreground }]}>new category</Text>
+              <Text style={[styles.modalTitle, { color: tc.foreground }]}>New Category</Text>
               <TouchableOpacity onPress={() => setCatModal(false)} style={[styles.closeBtn, { backgroundColor: tc.muted }]}>
                 <Feather name="x" size={20} color={tc.mutedForeground} />
               </TouchableOpacity>
             </View>
-
             <ScrollView showsVerticalScrollIndicator={false}>
-              <Text style={[styles.catFieldLabel, { color: tc.mutedForeground }]}>category name</Text>
+              <Text style={[styles.catFieldLabel, { color: tc.mutedForeground }]}>Category name</Text>
               <TextInput
                 style={[styles.catInput, { backgroundColor: tc.muted, color: tc.foreground, borderColor: tc.border }]}
                 placeholder="e.g. Gym & Fitness"
@@ -629,8 +597,7 @@ export default function BudgetScreen() {
                 value={newCatName}
                 onChangeText={setNewCatName}
               />
-
-              <Text style={[styles.catFieldLabel, { color: tc.mutedForeground }]}>monthly budget ($)</Text>
+              <Text style={[styles.catFieldLabel, { color: tc.mutedForeground }]}>Monthly budget ($)</Text>
               <TextInput
                 style={[styles.catInput, { backgroundColor: tc.muted, color: tc.foreground, borderColor: tc.border }]}
                 placeholder="e.g. 60"
@@ -639,15 +606,14 @@ export default function BudgetScreen() {
                 onChangeText={setNewCatBudget}
                 keyboardType="numeric"
               />
-
-              <Text style={[styles.catFieldLabel, { color: tc.mutedForeground }]}>icon</Text>
+              <Text style={[styles.catFieldLabel, { color: tc.mutedForeground }]}>Icon</Text>
               <View style={styles.iconGrid}>
                 {ICON_OPTIONS.map((icon) => (
                   <TouchableOpacity
                     key={icon}
                     style={[
                       styles.iconOption,
-                      { borderColor: tc.border },
+                      { borderColor: tc.border, backgroundColor: tc.muted },
                       newCatIcon === icon && { borderColor: newCatColor, backgroundColor: newCatColor + "18" },
                     ]}
                     onPress={() => setNewCatIcon(icon)}
@@ -657,8 +623,7 @@ export default function BudgetScreen() {
                   </TouchableOpacity>
                 ))}
               </View>
-
-              <Text style={[styles.catFieldLabel, { color: tc.mutedForeground }]}>color</Text>
+              <Text style={[styles.catFieldLabel, { color: tc.mutedForeground }]}>Color</Text>
               <View style={styles.colorRow}>
                 {COLOR_OPTIONS.map((c) => (
                   <TouchableOpacity
@@ -671,180 +636,231 @@ export default function BudgetScreen() {
                   </TouchableOpacity>
                 ))}
               </View>
-
-              {/* Preview */}
               {newCatName.trim() ? (
                 <View style={[styles.catPreview, { backgroundColor: tc.muted, borderColor: newCatColor + "40" }]}>
                   <View style={[styles.catIcon, { backgroundColor: newCatColor + "18" }]}>
                     <Feather name={newCatIcon as any} size={16} color={newCatColor} />
                   </View>
                   <Text style={[styles.catPreviewName, { color: tc.foreground }]}>{newCatName}</Text>
-                  <Text style={[styles.catPreviewBudget, { color: newCatColor }]}>
-                    ${newCatBudget || "0"}/mo
-                  </Text>
+                  <Text style={[styles.catPreviewBudget, { color: newCatColor }]}>${newCatBudget || "0"}/mo</Text>
                 </View>
               ) : null}
-
-              <TouchableOpacity style={styles.createCatBtn} onPress={handleAddCategory} activeOpacity={0.85}>
-                <LinearGradient colors={["#6355E8", "#8B5CF6"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} style={styles.createCatGrad}>
-                  <Feather name="plus" size={18} color="#fff" />
-                  <Text style={styles.createCatText}>Create Category</Text>
-                </LinearGradient>
+              <TouchableOpacity
+                style={[styles.createCatBtn, { backgroundColor: tc.foreground }]}
+                onPress={handleAddCategory}
+                activeOpacity={0.85}
+              >
+                <Feather name="plus" size={18} color={tc.onForeground} />
+                <Text style={[styles.createCatText, { color: tc.onForeground }]}>Create Category</Text>
               </TouchableOpacity>
             </ScrollView>
           </View>
         </View>
       </Modal>
-    </LinearGradient>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  header: { paddingHorizontal: 20, paddingBottom: 20 },
-  headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 },
-  headerTitle: { fontSize: 26, fontWeight: "800", color: "#fff", fontFamily: "Inter_700Bold" },
-  headerSub: { fontSize: 13, color: "rgba(255,255,255,0.6)", fontFamily: "Inter_400Regular", marginTop: 2 },
-  monthPill: { backgroundColor: "rgba(255,255,255,0.12)", borderRadius: 10, paddingHorizontal: 12, paddingVertical: 6 },
-  monthText: { fontSize: 12, color: "rgba(255,255,255,0.8)", fontFamily: "Inter_600SemiBold" },
-  totalsRow: { flexDirection: "row", alignItems: "center", marginBottom: 14 },
-  totalItem: { flex: 1, alignItems: "center" },
-  totalAmt: { fontSize: 20, fontWeight: "800", color: "#fff", fontFamily: "Inter_700Bold" },
-  totalLbl: { fontSize: 11, color: "rgba(255,255,255,0.6)", fontFamily: "Inter_400Regular", marginTop: 2 },
-  totalDivider: { width: 1, height: 30, backgroundColor: "rgba(255,255,255,0.15)" },
-  budgetBarWrap: { gap: 6 },
-  budgetBarTrack: { height: 6, borderRadius: 3, backgroundColor: "rgba(255,255,255,0.15)", overflow: "hidden" },
-  budgetBarFill: { height: "100%", borderRadius: 3 },
-  budgetBarLabel: { fontSize: 11, color: "rgba(255,255,255,0.55)", fontFamily: "Inter_400Regular" },
-  scroll: { padding: 16, gap: 0 },
-  funStatCard: { marginBottom: 20, borderRadius: 20, overflow: "hidden", shadowColor: "#6355E8", shadowOpacity: 0.25, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 6 },
-  funStatGrad: { padding: 18 },
-  funStatTitle: { fontSize: 13, fontWeight: "700", color: "rgba(255,255,255,0.9)", fontFamily: "Inter_700Bold", marginBottom: 14 },
-  funStatRow: { flexDirection: "row", justifyContent: "space-around" },
-  funStatItem: { alignItems: "center", gap: 4 },
-  funStatEmoji: { fontSize: 22 },
-  funStatPct: { fontSize: 22, fontWeight: "800", color: "#fff", fontFamily: "Inter_700Bold" },
-  funStatLabel: { fontSize: 10, color: "rgba(255,255,255,0.7)", fontFamily: "Inter_400Regular", textAlign: "center" },
-  funStatSub: { fontSize: 11, color: "rgba(255,255,255,0.6)", fontFamily: "Inter_400Regular", marginTop: 12, textAlign: "center" },
-  section: { marginBottom: 20 },
-  sectionRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
-  sectionTitle: { fontSize: 14, fontWeight: "700", fontFamily: "Inter_700Bold" },
-  sectionSub: { fontSize: 12, fontFamily: "Inter_400Regular" },
-  card: {
-    borderRadius: 18, padding: 16,
-    borderWidth: 1.5,
-    shadowColor: "#000", shadowOpacity: 0.04, shadowRadius: 6, shadowOffset: { width: 0, height: 2 }, elevation: 1,
+  header: {
+    paddingHorizontal: 22,
+    paddingBottom: 18,
+    borderBottomWidth: 1,
   },
-  chartLegend: { flexDirection: "row", alignItems: "center", gap: 6, marginTop: 8 },
-  legendDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: "#6355E8" },
-  legendText: { fontSize: 11, fontFamily: "Inter_400Regular" },
+  headerRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
+  eyebrow: {
+    fontSize: 10,
+    letterSpacing: 1.8,
+    textTransform: "uppercase",
+    fontWeight: "600",
+    fontFamily: "Inter_600SemiBold",
+    marginBottom: 4,
+  },
+  headerTitle: {
+    fontSize: 30,
+    fontWeight: "500",
+    fontFamily: displayFont,
+    letterSpacing: -0.5,
+    lineHeight: 34,
+  },
+  monthPill: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    borderRadius: 20,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderWidth: 1,
+    marginTop: 4,
+  },
+  monthText: { fontSize: 12, fontFamily: "Inter_600SemiBold" },
+  scroll: { paddingHorizontal: 22, gap: 0 },
+  heroWrap: { marginTop: 16, marginBottom: 4 },
+  heroCard: {
+    borderRadius: 22,
+    padding: 22,
+  },
+  heroTop: { flexDirection: "row", justifyContent: "space-between", alignItems: "baseline", marginBottom: 18 },
+  heroLabel: { fontSize: 10, letterSpacing: 1.2, textTransform: "uppercase", fontWeight: "600", color: "rgba(245,239,230,0.55)", fontFamily: "Inter_600SemiBold", marginBottom: 6 },
+  heroAmount: { fontSize: 44, fontFamily: displayFont, fontWeight: "400", color: "#F5EFE6", letterSpacing: -1, lineHeight: 48 },
+  heroSubAmount: { fontSize: 22, fontFamily: displayFont, fontWeight: "400", letterSpacing: -0.5, marginTop: 2 },
+  heroBudgetBar: { height: 4, backgroundColor: "rgba(245,239,230,0.15)", borderRadius: 2, overflow: "hidden", marginBottom: 10 },
+  heroBudgetFill: { height: "100%", backgroundColor: "#F5EFE6", borderRadius: 2 },
+  heroBudgetMeta: { flexDirection: "row", justifyContent: "space-between" },
+  heroBudgetLabel: { fontSize: 11, color: "rgba(245,239,230,0.6)", fontFamily: "Inter_400Regular" },
+  sectionHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "baseline",
+    marginTop: 28,
+    marginBottom: 12,
+  },
+  sectionTitle: { fontSize: 20, fontFamily: displayFont, fontWeight: "500", letterSpacing: -0.2 },
+  sectionSub: { fontSize: 12, fontFamily: "Inter_400Regular" },
+  section: { gap: 10 },
+  card: {
+    borderRadius: 18,
+    padding: 16,
+    borderWidth: 1,
+    shadowColor: "#0E1A2B",
+    shadowOpacity: 0.04,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 1,
+  },
   trendNote: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 10, fontStyle: "italic" },
   goalCard: {
-    borderRadius: 16, padding: 14,
-    marginBottom: 10, borderWidth: 1.5,
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    gap: 10,
   },
-  goalCardRow: { flexDirection: "row", alignItems: "center", gap: 12, marginBottom: 10 },
-  goalIconCircle: { width: 42, height: 42, borderRadius: 21, justifyContent: "center", alignItems: "center" },
-  goalIconText: { fontSize: 20 },
-  goalCardInfo: { flex: 1 },
-  goalCardName: { fontSize: 14, fontWeight: "700", fontFamily: "Inter_700Bold" },
-  goalCardSub: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 2 },
-  goalCardPct: { fontSize: 16, fontWeight: "800", fontFamily: "Inter_700Bold", textAlign: "right" },
-  goalCardAmt: { fontSize: 11, fontFamily: "Inter_400Regular", textAlign: "right" },
-  goalBarTrack: { height: 6, borderRadius: 3, overflow: "hidden" },
-  goalBarFill: { height: "100%", borderRadius: 3 },
+  goalRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
+  goalInfo: { flex: 1 },
+  goalName: { fontSize: 14, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
+  goalSub: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 2 },
+  goalPct: { fontSize: 18, fontFamily: displayFont, fontWeight: "400" },
+  goalAmt: { fontSize: 11, fontFamily: "Inter_400Regular", textAlign: "right" },
+  barTrack: { height: 5, borderRadius: 3, overflow: "hidden" },
+  barFill: { height: "100%", borderRadius: 3 },
   addCatBtn: {
-    flexDirection: "row", alignItems: "center", gap: 5,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
     borderRadius: 10,
-    paddingHorizontal: 10, paddingVertical: 6,
-    borderWidth: 1.5,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderWidth: 1,
   },
   addCatText: { fontSize: 12, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
-  catCard: {
-    borderRadius: 16, padding: 14,
-    marginBottom: 8, borderWidth: 1.5,
-  },
+  catCard: { borderRadius: 16, padding: 14, borderWidth: 1 },
   catRow: { flexDirection: "row", alignItems: "center", gap: 12 },
-  catIcon: { width: 38, height: 38, borderRadius: 10, justifyContent: "center", alignItems: "center" },
-  catInfo: { flex: 1, gap: 6 },
+  catIcon: { width: 36, height: 36, borderRadius: 10, justifyContent: "center", alignItems: "center" },
+  catInfo: { flex: 1, gap: 7 },
   catLabelRow: { flexDirection: "row", alignItems: "center", gap: 7 },
   catLabel: { fontSize: 14, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
-  overBadge: { backgroundColor: "#FEE2E2", borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 },
-  overBadgeText: { fontSize: 10, color: "#DC2626", fontWeight: "700", fontFamily: "Inter_700Bold" },
-  catBarTrack: { height: 6, borderRadius: 3, overflow: "hidden" },
-  catBarFill: { height: "100%", borderRadius: 3 },
+  overBadge: { backgroundColor: "#FDE8E8", borderRadius: 6, paddingHorizontal: 7, paddingVertical: 2 },
+  overBadgeText: { fontSize: 10, color: "#E8553E", fontWeight: "700", fontFamily: "Inter_700Bold" },
+  catBarTrack: { height: 4, borderRadius: 2, overflow: "hidden" },
+  catBarFill: { height: "100%", borderRadius: 2 },
   catAmounts: { alignItems: "flex-end" },
-  catSpent: { fontSize: 15, fontWeight: "700", fontFamily: "Inter_700Bold" },
+  catSpent: { fontSize: 14, fontWeight: "700", fontFamily: "Inter_700Bold" },
   catBudget: { fontSize: 11, fontFamily: "Inter_400Regular" },
-  catTip: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 8, fontStyle: "italic" },
-  dateGroup: { fontSize: 12, fontWeight: "700", fontFamily: "Inter_700Bold", textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 8, marginTop: 4 },
-  txRow: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 4 },
+  catTip: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 6 },
+  dateGroup: {
+    fontSize: 11,
+    fontWeight: "700",
+    fontFamily: "Inter_700Bold",
+    textTransform: "uppercase",
+    letterSpacing: 1,
+    marginBottom: 8,
+    marginTop: 16,
+  },
+  txRow: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 6 },
   txIcon: { width: 36, height: 36, borderRadius: 10, justifyContent: "center", alignItems: "center" },
   txInfo: { flex: 1 },
   txNameRow: { flexDirection: "row", alignItems: "center", gap: 6 },
-  txName: { fontSize: 14, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
+  txName: { fontSize: 14, fontWeight: "500", fontFamily: "Inter_500Medium" },
   scannedBadge: { flexDirection: "row", alignItems: "center", gap: 3, borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 },
   scannedText: { fontSize: 9, fontWeight: "700", fontFamily: "Inter_700Bold" },
-  txTime: { fontSize: 12, fontFamily: "Inter_400Regular", marginTop: 1 },
-  txAmount: { fontSize: 14, fontWeight: "700", color: "#EF4444", fontFamily: "Inter_700Bold" },
-  txDivider: { height: 1, marginVertical: 6 },
-  fab: { position: "absolute", alignSelf: "center", borderRadius: 28, overflow: "hidden", shadowColor: "#6355E8", shadowOpacity: 0.4, shadowRadius: 14, shadowOffset: { width: 0, height: 4 }, elevation: 10 },
-  fabGrad: { flexDirection: "row", alignItems: "center", gap: 8, paddingHorizontal: 22, paddingVertical: 14 },
-  fabText: { color: "#fff", fontSize: 15, fontWeight: "700", fontFamily: "Inter_700Bold" },
+  txTime: { fontSize: 11, fontFamily: "Inter_400Regular", marginTop: 2 },
+  txAmount: { fontSize: 14, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
+  txDivider: { height: 1, marginVertical: 4 },
+  fab: {
+    position: "absolute",
+    alignSelf: "center",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    paddingHorizontal: 22,
+    paddingVertical: 14,
+    borderRadius: 999,
+    shadowColor: "#0E1A2B",
+    shadowOpacity: 0.25,
+    shadowRadius: 14,
+    shadowOffset: { width: 0, height: 4 },
+    elevation: 10,
+  },
+  fabText: { fontSize: 15, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
+  emptyState: {
+    alignItems: "center",
+    gap: 10,
+    padding: 32,
+    borderRadius: 18,
+    borderWidth: 1,
+  },
+  emptyTitle: { fontSize: 16, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
+  emptySub: { fontSize: 13, fontFamily: "Inter_400Regular", textAlign: "center", lineHeight: 18 },
+  emptyBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    borderRadius: 999,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    marginTop: 6,
+  },
+  emptyBtnText: { fontSize: 14, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
   modalOverlay: { flex: 1, backgroundColor: "rgba(0,0,0,0.5)", justifyContent: "flex-end" },
   modalSheet: { borderTopLeftRadius: 28, borderTopRightRadius: 28, paddingHorizontal: 20, paddingBottom: 36, maxHeight: "75%" },
   modalHandle: { width: 36, height: 4, borderRadius: 2, alignSelf: "center", marginTop: 12, marginBottom: 16 },
   scanningState: { alignItems: "center", paddingVertical: 40, gap: 12 },
-  scanningTitle: { fontSize: 18, fontWeight: "700", fontFamily: "Inter_700Bold" },
+  scanningTitle: { fontSize: 18, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
   scanningSub: { fontSize: 14, fontFamily: "Inter_400Regular" },
   modalHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 },
-  modalTitle: { fontSize: 18, fontWeight: "800", fontFamily: "Inter_700Bold" },
+  modalTitle: { fontSize: 18, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
   modalSub: { fontSize: 13, fontFamily: "Inter_400Regular", marginTop: 2 },
   closeBtn: { width: 32, height: 32, borderRadius: 16, justifyContent: "center", alignItems: "center" },
   itemList: { maxHeight: 260 },
   itemRow: { flexDirection: "row", alignItems: "center", gap: 12, paddingVertical: 12, borderBottomWidth: 1 },
   itemCheck: { width: 22, height: 22, borderRadius: 6, borderWidth: 2, justifyContent: "center", alignItems: "center" },
-  itemCheckOn: {},
   itemName: { flex: 1, fontSize: 14, fontFamily: "Inter_500Medium" },
-  itemAmt: { fontSize: 14, fontWeight: "700", fontFamily: "Inter_700Bold" },
+  itemAmt: { fontSize: 14, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
   itemDim: { opacity: 0.4 },
   modalFooter: { paddingTop: 16, gap: 12 },
   totalRowModal: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   totalLabelModal: { fontSize: 14, fontFamily: "Inter_500Medium" },
-  totalAmtModal: { fontSize: 20, fontWeight: "800", fontFamily: "Inter_700Bold" },
-  addBtn: { borderRadius: 16, overflow: "hidden" },
-  addBtnGrad: { height: 52, flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 8 },
-  addBtnText: { color: "#fff", fontSize: 16, fontWeight: "700", fontFamily: "Inter_700Bold" },
+  totalAmtModal: { fontSize: 20, fontFamily: displayFont, fontWeight: "400" },
+  addBtn: { borderRadius: 14, height: 52, flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 8 },
+  addBtnText: { fontSize: 16, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
   catFieldLabel: { fontSize: 13, fontWeight: "600", fontFamily: "Inter_600SemiBold", marginBottom: 8, marginTop: 14 },
   catInput: {
-    borderRadius: 12, paddingHorizontal: 14, height: 48,
-    fontSize: 15, fontFamily: "Inter_400Regular",
-    borderWidth: 1.5,
+    borderRadius: 12,
+    paddingHorizontal: 14,
+    height: 48,
+    fontSize: 15,
+    fontFamily: "Inter_400Regular",
+    borderWidth: 1,
   },
   iconGrid: { flexDirection: "row", flexWrap: "wrap", gap: 10 },
   iconOption: { width: 44, height: 44, borderRadius: 12, borderWidth: 2, justifyContent: "center", alignItems: "center" },
   colorRow: { flexDirection: "row", gap: 10, flexWrap: "wrap" },
   colorSwatch: { width: 36, height: 36, borderRadius: 18, justifyContent: "center", alignItems: "center" },
   colorSwatchSelected: { borderWidth: 3, borderColor: "#fff", shadowColor: "#000", shadowOpacity: 0.2, shadowRadius: 4, shadowOffset: { width: 0, height: 2 }, elevation: 3 },
-  catPreview: {
-    flexDirection: "row", alignItems: "center", gap: 12,
-    borderRadius: 14, padding: 14,
-    marginTop: 16, borderWidth: 1.5,
-  },
+  catPreview: { flexDirection: "row", alignItems: "center", gap: 12, borderRadius: 14, padding: 14, marginTop: 16, borderWidth: 1 },
   catPreviewName: { flex: 1, fontSize: 14, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
   catPreviewBudget: { fontSize: 14, fontWeight: "700", fontFamily: "Inter_700Bold" },
-  createCatBtn: { borderRadius: 16, overflow: "hidden", marginTop: 20, marginBottom: 8 },
-  createCatGrad: { height: 52, flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 8 },
-  createCatText: { color: "#fff", fontSize: 16, fontWeight: "700", fontFamily: "Inter_700Bold" },
-  emptyState: {
-    alignItems: "center", gap: 8, padding: 28,
-    borderRadius: 18,
-    borderWidth: 1.5, borderStyle: "dashed",
-  },
-  emptyEmoji: { fontSize: 36 },
-  emptyTitle: { fontSize: 16, fontWeight: "700", fontFamily: "Inter_700Bold" },
-  emptySub: { fontSize: 13, fontFamily: "Inter_400Regular", textAlign: "center", lineHeight: 18 },
-  emptyBtn: { borderRadius: 14, overflow: "hidden", marginTop: 6, width: "100%" },
-  emptyBtnGrad: { height: 46, flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 8 },
-  emptyBtnText: { color: "#fff", fontSize: 14, fontWeight: "700", fontFamily: "Inter_700Bold" },
+  createCatBtn: { borderRadius: 14, height: 52, flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 8, marginTop: 20, marginBottom: 8 },
+  createCatText: { fontSize: 16, fontWeight: "600", fontFamily: "Inter_600SemiBold" },
 });
